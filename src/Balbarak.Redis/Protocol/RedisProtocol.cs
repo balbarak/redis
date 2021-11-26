@@ -5,19 +5,19 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Balbarak.Redis.Sockets
+namespace Balbarak.Redis.Protocol
 {
-    internal class RedisSocket : RedisSocketBase
+    internal class RedisProtocol : RedisProtocolBase
     {
         public const int BUFFER_SIZE = 8096;
 
-        public RedisSocket()
+        public RedisProtocol()
         {
         }
 
-        public override async Task<byte[]> SendData(byte[] data)
+        public override async Task<byte[]> SendCommand(byte[] data)
         {
-            await _socket.SendAsync(data, SocketFlags.None)
+            var sentBytes = await _socket.SendAsync(data, SocketFlags.None)
                 .ConfigureAwait(false);
 
             return await ReadDataInternal()
@@ -38,7 +38,7 @@ namespace Balbarak.Redis.Sockets
 
             result.AddRange(data);
 
-            while (IsEndOfData(data))
+            while (!IsEndOfData(data))
             {
                 bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
 
@@ -49,20 +49,6 @@ namespace Balbarak.Redis.Sockets
 
             return result.ToArray();
 
-        }
-
-        private bool IsEndOfData(byte[] data)
-        {
-            if (data.Length == 0)
-                return true;
-
-            if (data.Length == 1 && data[0] == (byte)'\n')
-                return true;
-
-            if (data[data.Length - 1] == (byte)'\n' && data[data.Length - 2] == (byte)'\n')
-                return true;
-
-            return false;
         }
 
     }

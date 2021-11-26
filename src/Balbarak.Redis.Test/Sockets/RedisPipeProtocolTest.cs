@@ -1,4 +1,4 @@
-﻿using Balbarak.Redis.Sockets;
+﻿using Balbarak.Redis.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Balbarak.Redis.Test
 {
-    public class PipeRedisSocketTest
+    public class RedisPipeProtocolTest
     {
         [Fact]
         public async Task Should_Send_Data()
@@ -16,11 +16,11 @@ namespace Balbarak.Redis.Test
             var host = "localhost";
             var port = 6379;
 
-            var redisSocket = new PipeRedisSocket();
+            var redisSocket = new RedisPipeProtocol();
 
             await redisSocket.Connect(host, port);
 
-            await redisSocket.SendData(Encoding.UTF8.GetBytes("set list fe \n"));
+            await redisSocket.SendCommand(Encoding.UTF8.GetBytes("set list fe \n"));
             
         }
     }

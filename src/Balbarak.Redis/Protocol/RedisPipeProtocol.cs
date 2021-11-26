@@ -10,12 +10,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("Balbarak.Redis.Test")]
-namespace Balbarak.Redis.Sockets
+namespace Balbarak.Redis.Protocol
 {
     
-    internal class PipeRedisSocket : RedisSocketBase
+    internal class RedisPipeProtocol : RedisProtocolBase
     {
-        public override async Task<byte[]> SendData(byte[] data)
+        public override async Task<byte[]> SendCommand(byte[] data)
         {
             var sentBytes = await _socket.SendAsync(data, SocketFlags.None);
 
@@ -67,16 +67,6 @@ namespace Balbarak.Redis.Sockets
             return true;
         }
 
-        private void ProcessLine(in ReadOnlySequence<byte> buffer)
-        {
-            foreach (var segment in buffer)
-            {
-                Debug.Write(Encoding.UTF8.GetString(segment.Span));
-            }
-
-            Debug.WriteLine(" ");
-        }
-
         private byte[] ReadData(in ReadOnlySequence<byte> buffer)
         {
             var result = new List<byte>();
@@ -87,6 +77,16 @@ namespace Balbarak.Redis.Sockets
             }
 
             return result.ToArray();
+        }
+
+        private void ProcessLine(in ReadOnlySequence<byte> buffer)
+        {
+            foreach (var segment in buffer)
+            {
+                Debug.Write(Encoding.UTF8.GetString(segment.Span));
+            }
+
+            Debug.WriteLine(" ");
         }
 
     }

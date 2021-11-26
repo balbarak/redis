@@ -5,13 +5,13 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Balbarak.Redis.Sockets
+namespace Balbarak.Redis.Protocol
 {
-    internal abstract class RedisSocketBase : IAsyncDisposable
+    internal abstract class RedisProtocolBase : IAsyncDisposable
     {
         protected Socket _socket;
 
-        public RedisSocketBase()
+        public RedisProtocolBase()
         {
             _socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
         }
@@ -21,7 +21,7 @@ namespace Balbarak.Redis.Sockets
             await _socket.ConnectAsync(host, port);
         }
 
-        public abstract Task<byte[]> SendData(byte[] data);
+        public abstract Task<byte[]> SendCommand(byte[] data);
 
         public bool HasError(byte[] data)
         {
@@ -63,6 +63,23 @@ namespace Balbarak.Redis.Sockets
                 _socket.Dispose();
 
             return ValueTask.CompletedTask;
+        }
+
+        protected bool IsEndOfData(byte[] data)
+        {
+            if (data == null)
+                return true;
+
+            if (data.Length == 0)
+                return true;
+
+            if (data.Length == 1 && data[0] == (byte)'\n')
+                return true;
+
+            if (data[data.Length - 2] == (byte)'\r' && data[data.Length - 1] == (byte)'\n')
+                return true;
+
+            return false;
         }
     }
 }
