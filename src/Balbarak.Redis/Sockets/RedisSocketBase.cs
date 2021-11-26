@@ -23,6 +23,40 @@ namespace Balbarak.Redis.Sockets
 
         public abstract Task<byte[]> SendData(byte[] data);
 
+        public bool HasError(byte[] data)
+        {
+            if (data == null)
+                return false;
+
+            if (data[0] == (byte)'-')
+                return true;
+
+            return false;
+        }
+
+        public RedisDataType GetType(byte[] data)
+        {
+            if (data == null)
+                return RedisDataType.Unkown;
+
+            if (data[0] == (byte)'-')
+                return RedisDataType.Error;
+
+            if (data[0] == (byte)'+')
+                return RedisDataType.SimpleString;
+
+            if (data[0] == (byte)':')
+                return RedisDataType.Integers;
+
+            if (data[0] == (byte)'$')
+                return RedisDataType.BulkString;
+
+            if (data[0] == (byte)'*')
+                return RedisDataType.Arrays;
+
+            return RedisDataType.Unkown;
+        }
+
         public ValueTask DisposeAsync()
         {
             if (_socket != null)

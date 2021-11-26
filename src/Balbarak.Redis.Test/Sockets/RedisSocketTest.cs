@@ -33,11 +33,28 @@ namespace Balbarak.Redis.Test
 
             await client.Connect(Connections.HOST, Connections.PORT);
 
-            var dataToSend = Encoding.UTF8.GetBytes("smembers slist \n");
+            var dataToSend = Encoding.UTF8.GetBytes("get test \n");
 
             var dataRecieved = await client.SendData(dataToSend);
 
             var result = Encoding.UTF8.GetString(dataRecieved);
+
+        }
+
+        [Fact]
+        public async Task Should_Determine_Error()
+        {
+            var client = new RedisSocket();
+
+            await client.Connect(Connections.HOST, Connections.PORT);
+
+            var dataToSend = Encoding.UTF8.GetBytes("smembers test \n");
+
+            var dataRecieved = await client.SendData(dataToSend);
+
+            var text = Encoding.UTF8.GetString(dataRecieved);
+
+            Assert.True(client.HasError(dataRecieved));
 
         }
     }
