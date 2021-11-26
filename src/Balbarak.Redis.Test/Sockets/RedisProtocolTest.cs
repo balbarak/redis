@@ -14,73 +14,70 @@ namespace Balbarak.Redis.Test
         [Fact]
         public async Task Should_Set_Data()
         {
-            var client = new RedisProtocol();
+            var client = await CreateAndConnectClient();
 
-            await client.Connect(Connections.HOST, Connections.PORT);
+            var data = "This is a test message from redis protocol client !";
 
-            var dataToSend = Encoding.UTF8.GetBytes("set hel \"This is stored using redis client\" \n");
+            var result = await client.Set("text", data);
 
-            var dataRcieved = await client.SendCommand(dataToSend);
-
-            var result = Encoding.UTF8.GetString(dataRcieved);
-
-            Assert.Equal(RedisResponse.SUCCESS,result);
+            Assert.True(result);
         }
 
         [Fact]
-        public async Task Should_Read_Data()
+        public async Task Should_Set_And_Get_Data()
+        {
+            var client = await CreateAndConnectClient();
+
+            var key = "text";
+
+            var data = "This is a test message from redis protocol client !";
+
+            var result = await client.Set(key, data);
+
+            Assert.True(result);
+
+            var dataRecieved = await client.Get("SS");
+
+            var dataRecievedText = Encoding.UTF8.GetString(dataRecieved);
+
+        }
+
+        [Fact]
+        public async Task Should_Set_And_Get_BulkStrings()
+        {
+            var client = await CreateAndConnectClient();
+
+            var key = "text";
+
+            var data = "This is a test message from redis protocol client 333!";
+
+            var result = await client.Set(key, data);
+
+            Assert.True(result);
+
+            var dataRecieved = await client.GetBulkStrings(key);
+
+            Assert.Equal(data, dataRecieved);
+
+        }
+
+        [Fact]
+        public async Task Should_Return_Null_When_No_Data()
+        {
+            var client = await CreateAndConnectClient();
+
+            var result = await client.GetBulkStrings(Guid.NewGuid().ToString().ToLower());
+
+            Assert.Empty(result);
+        }
+
+        private async Task<RedisProtocol> CreateAndConnectClient()
         {
             var client = new RedisProtocol();
 
             await client.Connect(Connections.HOST, Connections.PORT);
 
-            var dataToSend = Encoding.UTF8.GetBytes("get test \n");
-
-            var dataRecieved = await client.SendCommand(dataToSend);
-
-            var result = Encoding.UTF8.GetString(dataRecieved);
-
-        }
-
-        [Fact]
-        public async Task Should_Determine_Error()
-        {
-            var client = new RedisProtocol();
-
-            await client.Connect(Connections.HOST, Connections.PORT);
-
-            var dataToSend = Encoding.UTF8.GetBytes("smembers test \n");
-
-            var dataRecieved = await client.SendCommand(dataToSend);
-
-            var text = Encoding.UTF8.GetString(dataRecieved);
-
-            Assert.True(client.HasError(dataRecieved));
-
-        }
-
-        [Fact]
-        public async Task Should_Set_Large_Data()
-        {
-            var client = new RedisProtocol();
-            await client.Connect(Connections.HOST, Connections.PORT);
-
-            var dataToSend = File.ReadAllBytes(@"C:\Users\balbarak\Desktop\Tools\cpuz_x32.exe");
-
-            var base64str = Convert.ToBase64String(dataToSend);
-            
-            var cmd = Encoding.UTF8.GetBytes($"SET fork ");
-
-            var data = new List<byte>();
-
-            data.AddRange(cmd);
-            data.AddRange(dataToSend);
-
-            data.AddRange(Encoding.UTF8.GetBytes(" \n\n\n\n"));
-
-            await client.SendCommand(data.ToArray());
-
-
+            return client;
         }
     }
 }

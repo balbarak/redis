@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Balbarak.Redis
 {
-    internal class StringExtensions
+    internal static class StringExtensions
     {
+        public static byte[] ToUTF8Bytes(this string text)
+        {
+            return Encoding.UTF8.GetBytes(text);
+        }
     }
 }
