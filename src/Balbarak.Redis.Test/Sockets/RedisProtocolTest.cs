@@ -24,25 +24,6 @@ namespace Balbarak.Redis.Test
         }
 
         [Fact]
-        public async Task Should_Set_And_Get_Data()
-        {
-            var client = await CreateAndConnectClient();
-
-            var key = "text";
-
-            var data = "This is a test message from redis protocol client !";
-
-            var result = await client.Set(key, data);
-
-            Assert.True(result);
-
-            var dataRecieved = await client.Get("SS");
-
-            var dataRecievedText = Encoding.UTF8.GetString(dataRecieved);
-
-        }
-
-        [Fact]
         public async Task Should_Set_And_Get_BulkStrings()
         {
             var client = await CreateAndConnectClient();
@@ -69,6 +50,48 @@ namespace Balbarak.Redis.Test
             var result = await client.GetBulkStrings(Guid.NewGuid().ToString().ToLower());
 
             Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task Should_Ping()
+        {
+            var client = await CreateAndConnectClient();
+
+            var ping = await client.Ping();
+
+            Assert.Equal("PONG", ping);
+        }
+
+        [Fact]
+        public async Task Should_Return_False_When_No_Key()
+        {
+            var client = await CreateAndConnectClient();
+
+            var result = await client.Exists("fslfsd");
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task Should_Return_True_When_There_Is_Key()
+        {
+            var client = await CreateAndConnectClient();
+            
+            var key = "welcomekey";
+
+            await client.Set(key, "hello world");
+
+            var result = await client.Exists(key);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task Should_Handle_Connection_Failed()
+        {
+            var client = new RedisProtocol();
+
+            await client.Connect("localhost", 33);
         }
 
         private async Task<RedisProtocol> CreateAndConnectClient()

@@ -15,7 +15,7 @@ namespace Balbarak.Redis.Protocol
     
     internal class RedisPipeProtocol : RedisProtocolBase
     {
-        public override async Task<byte[]> SendCommand(byte[] data)
+        public async Task<byte[]> SendCommand(byte[] data)
         {
             var sentBytes = await _socket.SendAsync(data, SocketFlags.None);
 

@@ -18,23 +18,25 @@ namespace Balbarak.Redis.Protocol
 
         public virtual async Task Connect(string host, int port)
         {
-            await _socket.ConnectAsync(host, port);
+            try
+            {
+                await _socket.ConnectAsync(host, port);
+            }
+            catch (Exception ex)
+            {
+                throw new RedisException("Unable to connect to redis server", ex);
+            }
         }
-
-        public abstract Task<byte[]> SendCommand(byte[] data);
-
-        public bool HasError(byte[] data)
+        
+        public ValueTask DisposeAsync()
         {
-            if (data == null)
-                return false;
+            if (_socket != null)
+                _socket.Dispose();
 
-            if (data[0] == (byte)'-')
-                return true;
-
-            return false;
+            return ValueTask.CompletedTask;
         }
 
-        public RedisDataType GetType(byte[] data)
+        protected RedisDataType GetType(byte[] data)
         {
             if (data == null)
                 return RedisDataType.Unkown;
@@ -55,14 +57,6 @@ namespace Balbarak.Redis.Protocol
                 return RedisDataType.Arrays;
 
             return RedisDataType.Unkown;
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            if (_socket != null)
-                _socket.Dispose();
-
-            return ValueTask.CompletedTask;
         }
 
         protected bool IsEndOfData(byte[] data)
