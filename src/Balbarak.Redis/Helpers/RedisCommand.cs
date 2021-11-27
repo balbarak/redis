@@ -10,7 +10,17 @@ namespace Balbarak.Redis
     {
         public string Command { get; private set; }
 
+        public string Key { get;private set; }
+
+        public string Value { get; private set; }
+
         public string Arguments { get; private set; }
+
+        public RedisCommand(string cmd,string key,string value)
+        {
+            Command = cmd;
+            
+        }
 
         public RedisCommand(string command,string args)
         {

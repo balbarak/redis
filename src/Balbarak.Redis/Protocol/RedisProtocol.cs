@@ -28,12 +28,17 @@ namespace Balbarak.Redis.Protocol
 
         public async Task<bool> Set(string key, string value)
         {
-            var cmd = $"*3\r\n$3\r\nSET\r\n${key.Length}\r\n{key}\r\n${value.Length}\r\n{value}\r\n";
+            //var cmd = $"*3\r\n$3\r\nSET\r\n${key.Length}\r\n{key}\r\n${value.Length}\r\n{value}\r\n";
+
             //var cmd = $"SET {key} *1${value.Length}\r\n{value}\r\n";
 
-            var data = cmd.ToUTF8Bytes();
+            var dataToSend = new RedisCommandBuilder("SET")
+                .WithKey(key)
+                .WithValue(value)
+                .Build();
 
-            var redisRawData = await SendCommandInternal(data);
+
+            var redisRawData = await SendCommandInternal(dataToSend);
 
             ValidateError(redisRawData);
 
