@@ -27,7 +27,7 @@ namespace Balbarak.Redis.Protocol
                 throw new RedisException($"Unable to connect to redis server {host}:{port}", ex);
             }
         }
-        
+
         public ValueTask DisposeAsync()
         {
             if (_socket != null)
@@ -59,15 +59,26 @@ namespace Balbarak.Redis.Protocol
             return RedisDataType.Unkown;
         }
 
+        protected RedisProtocolDataType GetDataType(byte data)
+        {
+            return data switch
+            {
+                (byte)':' => RedisProtocolDataType.Integers,
+                (byte)'+' => RedisProtocolDataType.SimpleStrings,
+                (byte)'-' => RedisProtocolDataType.Errors,
+                (byte)'$' => RedisProtocolDataType.BulkStrings,
+                (byte)'*' => RedisProtocolDataType.Arrays,
+
+                _ => throw new NotImplementedException()
+            };
+        }
+
         protected bool IsEndOfData(byte[] data)
         {
-            if (data == null)
+            if (data == null || data.Length == 0)
                 return true;
 
-            if (data.Length == 0)
-                return true;
-
-            if (data.Length == 1 && data[0] == (byte)'\n')
+            if (data.Length == 1 && data[0] == (byte)'\r')
                 return true;
 
             if (data[data.Length - 2] == (byte)'\r' && data[data.Length - 1] == (byte)'\n')

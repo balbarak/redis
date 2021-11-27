@@ -115,7 +115,23 @@ namespace Balbarak.Redis.Test
             });
         }
 
+        [Fact]
+        public async Task Should_Set_Base_64_Data()
+        {
+            var key = "img";
 
+            var client = await CreateAndConnectClient();
+
+            var dataBytes = await File.ReadAllBytesAsync(@"Data\large.jpg");
+
+            var data = Convert.ToBase64String(dataBytes);
+
+            await client.Set(key, data);
+
+            var result = await client.GetBulkStrings(key);
+
+            Assert.Equal(data, result);
+        }
 
         private async Task<RedisProtocol> CreateAndConnectClient()
         {

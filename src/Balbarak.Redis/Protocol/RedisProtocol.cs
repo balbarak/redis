@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -8,9 +10,10 @@ using System.Threading.Tasks;
 
 namespace Balbarak.Redis.Protocol
 {
-    internal class RedisProtocol : RedisProtocolBase
+    internal partial class RedisProtocol : RedisProtocolBase
     {
-        public const int BUFFER_SIZE = 8096;
+        //public const int BUFFER_SIZE = 8096;
+        public const int BUFFER_SIZE = 2;
 
         public RedisProtocol()
         {
@@ -53,7 +56,7 @@ namespace Balbarak.Redis.Protocol
 
             ValidateError(rawData);
 
-            var result = ReadData(rawData).ToArray();
+            var result = ReadData(ref rawData).ToArray();
 
             return result;
         }
@@ -71,7 +74,7 @@ namespace Balbarak.Redis.Protocol
                 throw new RedisException();
 
 
-            return ReadBulkStrings(result);
+            return ReadBulkStrings(ref result);
         }
 
         public async Task<bool> Exists(string key)
@@ -82,7 +85,7 @@ namespace Balbarak.Redis.Protocol
 
             var redisRawData = await SendCommandInternal(dataToSend);
 
-            var result = ReadInteger(redisRawData);
+            var result = ReadInteger(ref redisRawData);
 
             if (result == 0)
                 return false;
@@ -90,9 +93,9 @@ namespace Balbarak.Redis.Protocol
                 return true;
         }
 
-        private string ReadBulkStrings(byte[] redisRawData)
+        private string ReadBulkStrings(ref byte[] redisRawData)
         {
-            var data = ReadData(redisRawData);
+            var data = ReadData(ref redisRawData);
 
             return Encoding.UTF8.GetString(data);
         }
@@ -112,16 +115,16 @@ namespace Balbarak.Redis.Protocol
             return Encoding.UTF8.GetString(textBytes);
         }
 
-        private ReadOnlySpan<byte> ReadData(byte[] redisRawData)
+        private ReadOnlySpan<byte> ReadData(ref byte[] redisRawData)
         {
             var span = new ReadOnlySpan<byte>(redisRawData);
 
-            var size = ReadDataSize(redisRawData, out int startIndex);
+            var size = ReadDataSize(ref redisRawData, out int startIndex);
 
             return span.Slice(startIndex, size);
         }
 
-        private int ReadDataSize(byte[] redisRawData, out int startIndex)
+        private int ReadDataSize(ref byte[] redisRawData, out int startIndex)
         {
             var span = new ReadOnlySpan<byte>(redisRawData);
             var size = new ReadOnlySpan<byte>();
@@ -155,7 +158,7 @@ namespace Balbarak.Redis.Protocol
             return result;
         }
 
-        private int ReadInteger(byte[] redisRawData)
+        private int ReadInteger(ref byte[] redisRawData)
         {
             if (redisRawData == null)
                 throw new RedisException("There is no data to parse");
@@ -175,7 +178,7 @@ namespace Balbarak.Redis.Protocol
             var sentBytes = await _socket.SendAsync(data, SocketFlags.None)
                 .ConfigureAwait(false);
 
-            return await ReadRawData()
+            return await ReadStreamRawData()
                 .ConfigureAwait(false);
         }
 
@@ -203,6 +206,52 @@ namespace Balbarak.Redis.Protocol
             }
 
             return result.ToArray();
+
+        }
+
+        private async Task<byte[]> ReadStreamRawData()
+        {
+            byte[] result = null;
+
+            long totalBytesRead = 0;
+
+            var stream = new RedisStream(_socket);
+
+            await stream.ReadRedisData();
+
+            //var buffer = new byte[BUFFER_SIZE];
+
+            //var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+
+            //if (bytesRead == 0)
+            //    return null;
+
+            //totalBytesRead += bytesRead;
+
+            //using (MemoryStream ms = new MemoryStream())
+            //{
+            //    var isBulkStrings = buffer[0] == RedisProtocolDataTypes.BULK_STRINGS;
+
+            //    if (isBulkStrings)
+            //    {
+            //        var size = ReadDataSize(ref buffer,out int startIndex);
+            //    }
+            //}
+
+            //var data = buffer.Skip(0).Take(bytesRead).ToArray();
+
+            //result.AddRange(data);
+
+            //while (!IsEndOfData(data))
+            //{
+            //    bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+
+            //    data = buffer.Skip(0).Take(bytesRead).ToArray();
+
+            //    result.AddRange(data);
+            //}
+
+            return result;
 
         }
 
