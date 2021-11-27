@@ -28,13 +28,16 @@ namespace Balbarak.Redis.Protocol
 
         public async Task<bool> Set(string key, string value)
         {
-            var cmd = $"SET {key} \"{value}\" \n";
+            var cmd = $"*3\r\n$3\r\nSET\r\n${key.Length}\r\n{key}\r\n${value.Length}\r\n{value}\r\n";
+            //var cmd = $"SET {key} *1${value.Length}\r\n{value}\r\n";
 
             var data = cmd.ToUTF8Bytes();
 
-            var result = await SendCommandInternal(data);
+            var redisRawData = await SendCommandInternal(data);
 
-            var resultText = Encoding.UTF8.GetString(result);
+            ValidateError(redisRawData);
+
+            var resultText = Encoding.UTF8.GetString(redisRawData);
 
             return resultText == RedisResponse.SUCCESS;
         }
@@ -47,6 +50,8 @@ namespace Balbarak.Redis.Protocol
 
             var rawData = await SendCommandInternal(data)
                 .ConfigureAwait(false);
+
+            ValidateError(rawData);
 
             var result = ReadData(rawData).ToArray();
 
@@ -112,7 +117,7 @@ namespace Balbarak.Redis.Protocol
             return span.Slice(startIndex, size);
         }
 
-        private int ReadDataSize(byte[] redisRawData,out int startIndex)
+        private int ReadDataSize(byte[] redisRawData, out int startIndex)
         {
             var span = new ReadOnlySpan<byte>(redisRawData);
             var size = new ReadOnlySpan<byte>();
@@ -156,9 +161,9 @@ namespace Balbarak.Redis.Protocol
             if (redisRawData[0] != (byte)':')
                 throw new RedisException("Data recieved is not integer");
 
-            var text = Encoding.UTF8.GetString(redisRawData,1,redisRawData.Length - 3);
+            var text = Encoding.UTF8.GetString(redisRawData, 1, redisRawData.Length - 3);
 
-            int.TryParse(text,out int result);
+            int.TryParse(text, out int result);
 
             return result;
         }
@@ -199,5 +204,17 @@ namespace Balbarak.Redis.Protocol
 
         }
 
+        private void ValidateError(byte[] redisRawData)
+        {
+            if (redisRawData == null)
+                throw new RedisException("No data recieved from redis");
+
+            if (redisRawData[0] == (byte)'-')
+            {
+                var errorMessage = Encoding.UTF8.GetString(redisRawData, 1, redisRawData.Length - 3);
+
+                throw new RedisException(errorMessage);
+            }
+        }
     }
 }

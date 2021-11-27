@@ -12,6 +12,24 @@ namespace Balbarak.Redis.Test
     public class RedisProtocolTest
     {
         [Fact]
+        public async Task Should_Set_Data_With_Backslah_N()
+        {
+            var client = await CreateAndConnectClient();
+
+            var key = "text";
+
+            var data = "How can \n this mith not \n work !";
+
+            var result = await client.Set(key, data);
+
+            Assert.True(result);
+
+            var dataRecieved = await client.GetBulkStrings(key);
+
+            Assert.Equal(data, dataRecieved);
+        }
+
+        [Fact]
         public async Task Should_Set_Data()
         {
             var client = await CreateAndConnectClient();
@@ -87,12 +105,17 @@ namespace Balbarak.Redis.Test
         }
 
         [Fact]
-        public async Task Should_Handle_Connection_Failed()
+        public void Should_Handle_Connection_Failed()
         {
             var client = new RedisProtocol();
 
-            await client.Connect("localhost", 33);
+            Assert.Throws<RedisException>(() =>
+            {
+                client.Connect("localhost", 32).GetAwaiter().GetResult();
+            });
         }
+
+
 
         private async Task<RedisProtocol> CreateAndConnectClient()
         {
