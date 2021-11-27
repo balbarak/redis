@@ -24,7 +24,7 @@ namespace Balbarak.Redis.Protocol
             }
             catch (Exception ex)
             {
-                throw new RedisException("Unable to connect to redis server", ex);
+                throw new RedisException($"Unable to connect to redis server {host}:{port}", ex);
             }
         }
         

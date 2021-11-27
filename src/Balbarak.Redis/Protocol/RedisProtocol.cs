@@ -28,15 +28,10 @@ namespace Balbarak.Redis.Protocol
 
         public async Task<bool> Set(string key, string value)
         {
-            //var cmd = $"*3\r\n$3\r\nSET\r\n${key.Length}\r\n{key}\r\n${value.Length}\r\n{value}\r\n";
-
-            //var cmd = $"SET {key} *1${value.Length}\r\n{value}\r\n";
-
             var dataToSend = new RedisCommandBuilder("SET")
                 .WithKey(key)
                 .WithValue(value)
                 .Build();
-
 
             var redisRawData = await SendCommandInternal(dataToSend);
 
@@ -49,11 +44,11 @@ namespace Balbarak.Redis.Protocol
 
         public async Task<byte[]> Get(string key)
         {
-            var cmd = $"GET {key} \n";
+            var dataToSend = new RedisCommandBuilder("GET")
+                .WithKey(key)
+                .Build();
 
-            var data = cmd.ToUTF8Bytes();
-
-            var rawData = await SendCommandInternal(data)
+            var rawData = await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);
 
             ValidateError(rawData);
@@ -65,7 +60,9 @@ namespace Balbarak.Redis.Protocol
 
         public async Task<string> GetBulkStrings(string key)
         {
-            var dataToSend = $"GET {key} \n".ToUTF8Bytes();
+            var dataToSend = new RedisCommandBuilder("GET")
+               .WithKey(key)
+               .Build();
 
             var result = await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);
@@ -79,7 +76,9 @@ namespace Balbarak.Redis.Protocol
 
         public async Task<bool> Exists(string key)
         {
-            var dataToSend = $"EXISTS {key} \n".ToUTF8Bytes();
+            var dataToSend = new RedisCommandBuilder("EXISTS")
+              .WithKey(key)
+              .Build();
 
             var redisRawData = await SendCommandInternal(dataToSend);
 
@@ -154,8 +153,6 @@ namespace Balbarak.Redis.Protocol
             Int32.TryParse(sizeText, out int result);
 
             return result;
-
-
         }
 
         private int ReadInteger(byte[] redisRawData)

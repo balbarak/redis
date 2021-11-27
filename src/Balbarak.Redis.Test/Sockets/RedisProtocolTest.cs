@@ -12,13 +12,13 @@ namespace Balbarak.Redis.Test
     public class RedisProtocolTest
     {
         [Fact]
-        public async Task Should_Set_Data_With_Backslah_N()
+        public async Task Should_Set_Data_With_Protocol_Special_Characters()
         {
             var client = await CreateAndConnectClient();
 
             var key = "text";
 
-            var data = "How can \n this mith not \n work !";
+            var data = "This data has \n\r with protocl characters ! and end with \n\r";
 
             var result = await client.Set(key, data);
 

@@ -20,7 +20,6 @@ namespace Balbarak.Redis
 
         public event EventHandler OnConnected;
 
-
         public RedisClient(string host,int port)
         {
             _host = host;
@@ -39,23 +38,6 @@ namespace Balbarak.Redis
 
         public async Task Ping()
         {
-            var cmd = new RedisCommand("get FIX\n", "");
-            var data = cmd.GetBytesToSend();
-
-
-            var bytesSend = await _socket.SendAsync(data, SocketFlags.None)
-                .ConfigureAwait(false);
-
-            var buffer = new byte[BUFFER_SIZE];
-
-            var memory = new Memory<byte>(buffer);
-
-            var bytesRead = await _socket.ReceiveAsync(memory, SocketFlags.None)
-                .ConfigureAwait(false);
-
-            var fff = buffer.Skip(0).Take(bytesRead).ToArray();
-
-            var str = Encoding.UTF8.GetString(fff);
 
         }
 
