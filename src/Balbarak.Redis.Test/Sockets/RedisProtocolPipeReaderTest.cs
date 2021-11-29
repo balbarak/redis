@@ -1,6 +1,7 @@
 ﻿using Balbarak.Redis.Protocol;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ namespace Balbarak.Redis.Test.Sockets
             //var cmd = new RedisCommandBuilder("GET").WithKey(key).Build();
 
             var result = await client.Get(key);
+
         }
     }
 }

@@ -42,16 +42,16 @@ namespace Balbarak.Redis.Protocol
                 return RedisDataType.Unkown;
 
             if (data[0] == (byte)'-')
-                return RedisDataType.Error;
+                return RedisDataType.Errors;
 
             if (data[0] == (byte)'+')
-                return RedisDataType.SimpleString;
+                return RedisDataType.SimpleStrings;
 
             if (data[0] == (byte)':')
                 return RedisDataType.Integers;
 
             if (data[0] == (byte)'$')
-                return RedisDataType.BulkString;
+                return RedisDataType.BulkStrings;
 
             if (data[0] == (byte)'*')
                 return RedisDataType.Arrays;

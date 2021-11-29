@@ -9,9 +9,9 @@ namespace Balbarak.Redis
     internal enum RedisDataType
     {
         Integers,
-        SimpleString,
-        BulkString,
-        Error,
+        SimpleStrings,
+        BulkStrings,
+        Errors,
         Arrays,
         Unkown
     }

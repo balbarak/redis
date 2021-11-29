@@ -17,7 +17,6 @@ namespace Balbarak.Redis.Protocol
 
         public RedisProtocol()
         {
-
         }
 
         public async Task<string> Ping()
@@ -55,6 +54,8 @@ namespace Balbarak.Redis.Protocol
                 .ConfigureAwait(false);
 
             ValidateError(rawData);
+
+            return rawData;
 
             var result = ReadData(ref rawData).ToArray();
 
@@ -184,9 +185,9 @@ namespace Balbarak.Redis.Protocol
 
         private async Task<byte[]> ReadRawData()
         {
-            var result = new List<byte>();
+            var stream = new RedisStream(_socket);
 
-            var stream = new NetworkStream(_socket);
+            var result = new List<byte>();
 
             var buffer = new byte[BUFFER_SIZE];
 
@@ -217,7 +218,7 @@ namespace Balbarak.Redis.Protocol
 
             var stream = new RedisStream(_socket);
 
-            await stream.ReadRedisData();
+            return await stream.ReadRedisBuffer();
 
             //var buffer = new byte[BUFFER_SIZE];
 
