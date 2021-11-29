@@ -35,47 +35,36 @@ namespace Balbarak.Redis.Protocol
             var reader = PipeReader.Create(this);
             var ms = new MemoryStream();
 
+            var readResult = await reader.ReadAsync();
+            var buffer = readResult.Buffer;
+
+            var size = ReadSize(ref buffer);
+
+            long totalBytesRead = 0;
+
             while (true)
             {
-                ReadResult readResult = await reader.ReadAsync();
-                ReadOnlySequence<byte> buffer = readResult.Buffer;
+                var span = buffer.Slice(0, buffer.End);
 
-                var size = ReadSize(ref buffer);
-                long totalBytesRead = 0;
-                long startIndex = 0;
+                var str = Encoding.UTF8.GetString(span);
 
-                while (totalBytesRead < size)
+                totalBytesRead += buffer.Length;
+
+                buffer = buffer.Slice(buffer.GetPosition(0, buffer.End));
+
+                ms.Write(span.ToArray());
+
+                if (totalBytesRead >= size)
                 {
-                    var bufferEnd = size > buffer.Length ? buffer.Length : size;
-
-                    var data = buffer.Slice(startIndex, 5).ToArray();
-                    
-                    var dataStr = Encoding.UTF8.GetString(data);
-
-                    ms.Write(data);
-
-                    startIndex += bufferEnd;
-
-                    totalBytesRead += bufferEnd;
-
-                    reader.AdvanceTo(buffer.Start, buffer.End);
-
-                    readResult = await reader.ReadAsync();
-                    buffer = readResult.Buffer;
-
-                    if (readResult.IsCompleted)
-                    {
-                        break;
-                    }
+                    break;
                 }
 
-                break;
-
+                reader.AdvanceTo(buffer.Start, buffer.End);
+                readResult = await reader.ReadAsync();
+                buffer = readResult.Buffer;
             }
 
             result = ms.ToArray();
-
-            //var resultStr = Encoding.UTF8.GetString(result);
 
             return result;
         }
@@ -134,5 +123,7 @@ namespace Balbarak.Redis.Protocol
             return result;
         }
 
+        
+            
     }
 }

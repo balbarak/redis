@@ -14,7 +14,7 @@ namespace Balbarak.Redis.Test.Sockets
         [Fact]
         internal async Task Should_Read_With_PipeReader()
         {
-            var key = "img";
+            var key = "f";
 
             var client = await CreateAndConnectClient();
 
