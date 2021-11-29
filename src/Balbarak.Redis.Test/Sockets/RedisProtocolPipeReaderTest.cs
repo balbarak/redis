@@ -16,7 +16,7 @@ namespace Balbarak.Redis.Test.Sockets
         {
             var key = "img";
 
-            var client = await CreateAndConnectClient();
+            var client = await CreateProtocolAndConnect();
 
             var fileData = File.ReadAllBytes(@"C:\Users\balbarak\Desktop\Redis\fix.jpg");
             var fileBase64 = Convert.ToBase64String(fileData);
@@ -39,7 +39,7 @@ namespace Balbarak.Redis.Test.Sockets
         {
             var key = "img";
 
-            var client = await CreateAndConnectClient();
+            var client = await CreateProtocolAndConnect();
 
             //var cmd = new RedisCommandBuilder("GET").WithKey(key).Build();
 

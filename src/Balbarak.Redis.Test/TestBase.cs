@@ -10,7 +10,7 @@ namespace Balbarak.Redis.Test
 {
     public class TestBase
     {
-        internal virtual async Task<RedisProtocol> CreateAndConnectClient()
+        internal virtual async Task<RedisProtocol> CreateProtocolAndConnect()
         {
             var client = new RedisProtocol();
 

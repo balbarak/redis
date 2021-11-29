@@ -14,7 +14,7 @@ namespace Balbarak.Redis.Protocol
 {
     internal class RedisProtocol
     {
-        protected Socket _socket;
+        public Socket _socket;
 
         public RedisProtocol()
         {

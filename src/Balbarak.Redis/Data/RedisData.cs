@@ -10,6 +10,15 @@ namespace Balbarak.Redis.Data
     {
         public byte[] RawData { get; set; }
 
-        public string DataText => RawData != null ? Encoding.UTF8.GetString(RawData) : null;
+        public string RawDataText => RawData != null ? Encoding.UTF8.GetString(RawData) : null;
+
+        public byte[] Data { get; set; }
+
+        public string DataText => Data != null ? Encoding.UTF8.GetString(Data) : null;
+
+        public RedisData()
+        {
+
+        }
     }
 }

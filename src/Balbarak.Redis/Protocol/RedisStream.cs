@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Balbarak.Redis.Data;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -80,6 +81,64 @@ namespace Balbarak.Redis.Protocol
 
                 return data.ToArray();
             }
+
+            return null;
+        }
+
+        public async Task<RedisData> ReadRedisData()
+        {
+            
+            //var ms = new MemoryStream();
+            //var reader = PipeReader.Create(this);
+
+            //var readResult = await reader.ReadAsync();
+            //var buffer = readResult.Buffer;
+
+            //var firstByte = buffer.FirstSpan[0];
+
+            //if (firstByte == SIMPLE_STRINGS)
+            //{
+            //    var data = ProccessSimpleString(ref buffer);
+
+            //    return data.ToArray();
+            //}
+
+            //if (firstByte == BULK_STRINGS)
+            //{
+            //    var size = ReadSize(ref buffer);
+
+            //    while (true && size > 0)
+            //    {
+            //        if (buffer.Length >= size)
+            //        {
+            //            var span = buffer.Slice(0, buffer.Length - 2);
+
+            //            ms.Write(span.ToArray());
+
+            //            break;
+            //        }
+
+            //        reader.AdvanceTo(buffer.Start, buffer.End);
+            //        readResult = await reader.ReadAsync();
+            //        buffer = readResult.Buffer;
+            //    }
+
+            //    return ms.ToArray();
+            //}
+
+            //if (firstByte == ERRORS)
+            //{
+            //    var data = ProccessSimpleString(ref buffer);
+
+            //    return data.ToArray();
+            //}
+
+            //if (firstByte == INTEGERS)
+            //{
+            //    var data = ProccessIntegers(ref buffer);
+
+            //    return data.ToArray();
+            //}
 
             return null;
         }
