@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Balbarak.Redis
+namespace Balbarak.Redis.Data
 {
     internal enum RedisDataType
     {
-        Integers,
         SimpleStrings,
-        BulkStrings,
-        Errors,
+        Integers,
         Arrays,
-        Unkown
-    }
+        Errors,
+        BulkStrings
+}
 }

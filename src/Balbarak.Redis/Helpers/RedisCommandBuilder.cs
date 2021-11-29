@@ -12,6 +12,7 @@ namespace Balbarak.Redis
         private string _command;
         private string _key;
         private string _value;
+        private byte[] _valueBytes;
         private int _numberOfSegments = 1;
 
         public RedisCommandBuilder(string command)
@@ -23,7 +24,7 @@ namespace Balbarak.Redis
         public RedisCommandBuilder WithKey(string key)
         {
             _key = key;
-            
+
             _numberOfSegments++;
 
             return this;
@@ -32,6 +33,14 @@ namespace Balbarak.Redis
         public RedisCommandBuilder WithValue(string value)
         {
             _value = value;
+            _numberOfSegments++;
+
+            return this;
+        }
+
+        public RedisCommandBuilder WithValue(byte[] value)
+        {
+            _valueBytes = value;
             _numberOfSegments++;
 
             return this;
@@ -46,14 +55,28 @@ namespace Balbarak.Redis
 
             if (!string.IsNullOrWhiteSpace(_key))
             {
-                _fullCommand.Append($"${_key.Length}\r\n");
+                var size = Encoding.UTF8.GetByteCount(_key);
+
+                _fullCommand.Append($"${size}\r\n");
+
                 _fullCommand.Append($"{_key}\r\n");
             }
 
             if (!string.IsNullOrWhiteSpace(_value))
             {
-                _fullCommand.Append($"${_value.Length}\r\n");
+                var size = Encoding.UTF8.GetByteCount(_value);
+
+                _fullCommand.Append($"${size}\r\n");
+
                 _fullCommand.Append($"{_value}\r\n");
+            }
+
+            if (_valueBytes != null)
+            {
+                var base64 = Convert.ToBase64String(_valueBytes);
+
+                _fullCommand.Append($"${base64.Length}\r\n");
+                _fullCommand.Append($"{base64}\r\n");
             }
 
             var cmd = _fullCommand.ToString();
