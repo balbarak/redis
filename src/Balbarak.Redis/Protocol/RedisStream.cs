@@ -21,6 +21,7 @@ namespace Balbarak.Redis.Protocol
         private const byte SIMPLE_STRINGS = (byte)'+';
         private const byte INTEGERS = (byte)':';
         private const byte END = (byte)'\r';
+        private const byte NEW_LINE = (byte)'\n';
         private static byte[] CLRF = new byte[2] { (byte)'\r', (byte)'\n' };
 
         public RedisStream(Socket socket) : base(socket)
@@ -30,41 +31,58 @@ namespace Balbarak.Redis.Protocol
 
         public async Task<byte[]> ReadRedisBuffer()
         {
-            byte[] result = null;
-
-            var reader = PipeReader.Create(this);
             var ms = new MemoryStream();
+            var reader = PipeReader.Create(this);
 
             var readResult = await reader.ReadAsync();
             var buffer = readResult.Buffer;
 
-            var size = ReadSize(ref buffer);
+            var firstByte = buffer.FirstSpan[0];
 
-            long totalBytesRead = 0;
-
-            while (true)
+            if (firstByte == SIMPLE_STRINGS)
             {
-                var span = buffer.Slice(0, buffer.End);
+                var data = ReadSimpleString(ref buffer);
 
-                var str = Encoding.UTF8.GetString(span);
-
-                totalBytesRead += buffer.Length;
-
-                buffer = buffer.Slice(buffer.GetPosition(0, buffer.End));
-
-                ms.Write(span.ToArray());
-
-                if (totalBytesRead >= size)
-                {
-                    break;
-                }
-
-                reader.AdvanceTo(buffer.Start, buffer.End);
-                readResult = await reader.ReadAsync();
-                buffer = readResult.Buffer;
+                return data.ToArray();
             }
 
-            result = ms.ToArray();
+            if (firstByte == BULK_STRINGS)
+            {
+                var size = ReadSize(ref buffer);
+                
+                while (true)
+                {
+                    if (buffer.Length >= size)
+                    {
+                        var span = buffer.Slice(0, buffer.Length - 2);
+
+                        ms.Write(span.ToArray());
+
+                        break;
+                    }
+
+                    reader.AdvanceTo(buffer.Start, buffer.End);
+                    readResult = await reader.ReadAsync();
+                    buffer = readResult.Buffer;
+                }
+
+                return ms.ToArray();
+            }
+
+            return null;
+        }
+
+        private byte[] ReadSimpleString(ref ReadOnlySequence<byte> buffer)
+        {
+            var endPosition = buffer.PositionOf(END);
+            var newLine = buffer.PositionOf(NEW_LINE);
+
+            if (endPosition == null || newLine == null)
+                return null;
+
+            var result =  buffer.Slice(1, endPosition.Value).ToArray();
+
+            buffer.Slice(1, newLine.Value);
 
             return result;
         }
@@ -103,10 +121,11 @@ namespace Balbarak.Redis.Protocol
 
         private long ReadSize(ref ReadOnlySequence<byte> buffer)
         {
-            SequencePosition? startPosition = buffer.PositionOf((byte)'$');
-            SequencePosition? endPosition = buffer.PositionOf((byte)'\n');
+            var startPosition = buffer.PositionOf((byte)'$');
+            var endPosition = buffer.PositionOf((byte)'\r');
+            var dataEnd = buffer.PositionOf((byte)'\n');
 
-            if (startPosition == null || endPosition == null)
+            if (startPosition == null || endPosition == null || dataEnd == null)
             {
                 return 0;
             }
@@ -115,15 +134,12 @@ namespace Balbarak.Redis.Protocol
 
             var sizeStr = Encoding.UTF8.GetString(sizeData);
 
-            buffer = buffer.Slice(buffer.GetPosition(1, endPosition.Value));
+            buffer = buffer.Slice(buffer.GetPosition(1, dataEnd.Value));
 
             long.TryParse(sizeStr, out long result);
 
-
             return result;
         }
-
-        
             
     }
 }

@@ -53,13 +53,9 @@ namespace Balbarak.Redis.Protocol
             var rawData = await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);
 
-            ValidateError(rawData);
+            //ValidateError(rawData);
 
             return rawData;
-
-            var result = ReadData(ref rawData).ToArray();
-
-            return result;
         }
 
         public async Task<string> GetBulkStrings(string key)
@@ -176,11 +172,12 @@ namespace Balbarak.Redis.Protocol
 
         private async Task<byte[]> SendCommandInternal(byte[] data)
         {
+            var stream = new RedisStream(_socket);
+
             var sentBytes = await _socket.SendAsync(data, SocketFlags.None)
                 .ConfigureAwait(false);
 
-            return await ReadStreamRawData()
-                .ConfigureAwait(false);
+            return await stream.ReadRedisBuffer();
         }
 
         private async Task<byte[]> ReadRawData()
@@ -209,52 +206,7 @@ namespace Balbarak.Redis.Protocol
             return result.ToArray();
 
         }
-
-        private async Task<byte[]> ReadStreamRawData()
-        {
-            byte[] result = null;
-
-            long totalBytesRead = 0;
-
-            var stream = new RedisStream(_socket);
-
-            return await stream.ReadRedisBuffer();
-
-            //var buffer = new byte[BUFFER_SIZE];
-
-            //var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-
-            //if (bytesRead == 0)
-            //    return null;
-
-            //totalBytesRead += bytesRead;
-
-            //using (MemoryStream ms = new MemoryStream())
-            //{
-            //    var isBulkStrings = buffer[0] == RedisProtocolDataTypes.BULK_STRINGS;
-
-            //    if (isBulkStrings)
-            //    {
-            //        var size = ReadDataSize(ref buffer,out int startIndex);
-            //    }
-            //}
-
-            //var data = buffer.Skip(0).Take(bytesRead).ToArray();
-
-            //result.AddRange(data);
-
-            //while (!IsEndOfData(data))
-            //{
-            //    bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-
-            //    data = buffer.Skip(0).Take(bytesRead).ToArray();
-
-            //    result.AddRange(data);
-            //}
-
-            return result;
-
-        }
+        
 
         private void ValidateError(byte[] redisRawData)
         {
