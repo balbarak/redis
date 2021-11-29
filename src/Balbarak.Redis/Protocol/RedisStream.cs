@@ -41,7 +41,7 @@ namespace Balbarak.Redis.Protocol
 
             if (firstByte == SIMPLE_STRINGS)
             {
-                var data = ReadSimpleString(ref buffer);
+                var data = ProccessSimpleString(ref buffer);
 
                 return data.ToArray();
             }
@@ -72,7 +72,7 @@ namespace Balbarak.Redis.Protocol
             return null;
         }
 
-        private byte[] ReadSimpleString(ref ReadOnlySequence<byte> buffer)
+        private byte[] ProccessSimpleString(ref ReadOnlySequence<byte> buffer)
         {
             var endPosition = buffer.PositionOf(END);
             var newLine = buffer.PositionOf(NEW_LINE);
@@ -96,27 +96,6 @@ namespace Balbarak.Redis.Protocol
                 return RedisProtocolDataType.SimpleStrings;
 
             return RedisProtocolDataType.Unkown;
-        }
-
-        private bool TryReadBulkString(ref ReadOnlySequence<byte> buffer, long totalSize, ref long totalBytesRead, out ReadOnlySequence<byte> dataToProccess)
-        {
-            if (totalBytesRead == totalSize)
-            {
-                //buffer = buffer.Slice(0, totalSize);
-
-                dataToProccess = default;
-                return false;
-            }
-
-            var bytesToRead = totalSize > buffer.Length ? buffer.Length : totalSize;
-
-            dataToProccess = buffer.Slice(0,bytesToRead);
-
-            buffer = buffer.Slice(bytesToRead);
-            
-            totalBytesRead += bytesToRead;
-
-            return true;
         }
 
         private long ReadSize(ref ReadOnlySequence<byte> buffer)

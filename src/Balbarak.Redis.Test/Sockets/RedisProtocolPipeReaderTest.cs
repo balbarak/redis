@@ -31,7 +31,8 @@ namespace Balbarak.Redis.Test.Sockets
             var resultBase64 = Convert.FromBase64String(result);
 
             File.WriteAllBytes(@"C:\Users\balbarak\Desktop\Redis\output.jpg", resultBase64);
-            
+
+            Assert.Equal(result, fileBase64);
         }
         [Fact]
         internal async Task Should_Read_With_PipeReader()

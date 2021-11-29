@@ -9,5 +9,7 @@ namespace Balbarak.Redis
     internal class RedisResponse
     {
         public const string SUCCESS = "+OK\r\n";
+
+        public const string OK = "OK";
     }
 }

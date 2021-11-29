@@ -25,7 +25,7 @@ namespace Balbarak.Redis.Protocol
 
             var result = await SendCommandInternal(dataToSend);
 
-            return ReadSimpleString(result);
+            return Encoding.UTF8.GetString(result);
         }
 
         public async Task<bool> Set(string key, string value)
@@ -41,7 +41,7 @@ namespace Balbarak.Redis.Protocol
 
             var resultText = Encoding.UTF8.GetString(redisRawData);
 
-            return resultText == RedisResponse.SUCCESS;
+            return resultText == RedisResponse.OK;
         }
 
         public async Task<byte[]> Get(string key)
