@@ -12,7 +12,7 @@ namespace Balbarak.Redis.Test
     public class RedisProtocolTest
     {
         [Fact]
-        public async Task Should_Set_Data_With_Protocol_Special_Characters()
+        public async Task Should_Set_Data_With_Special_Characters()
         {
             var client = await CreateAndConnectClient();
 
@@ -20,13 +20,15 @@ namespace Balbarak.Redis.Test
 
             var data = "This data has \n\r with protocl characters ! and end with \n\r";
 
-            var result = await client.Set(key, data);
+            var setResult = await client.Set(key, data);
 
-            Assert.True(result);
+            Assert.True(setResult);
 
-            var dataRecieved = await client.GetBulkStrings(key);
+            var dataRecieved = await client.Get(key);
 
-            Assert.Equal(data, dataRecieved);
+            var result = Encoding.UTF8.GetString(dataRecieved);
+
+            Assert.Equal(data, result);
         }
 
         [Fact]
@@ -54,9 +56,11 @@ namespace Balbarak.Redis.Test
 
             Assert.True(result);
 
-            var dataRecieved = await client.GetBulkStrings(key);
+            var dataRecieved = await client.Get(key);
 
-            Assert.Equal(data, dataRecieved);
+            var dataStr = Encoding.UTF8.GetString(dataRecieved);
+
+            Assert.Equal(data, dataStr);
 
         }
 
@@ -65,7 +69,7 @@ namespace Balbarak.Redis.Test
         {
             var client = await CreateAndConnectClient();
 
-            var result = await client.GetBulkStrings(Guid.NewGuid().ToString().ToLower());
+            var result = await client.Get(Guid.NewGuid().ToString().ToLower());
 
             Assert.Empty(result);
         }
@@ -128,7 +132,9 @@ namespace Balbarak.Redis.Test
 
             await client.Set(key, data);
 
-            var result = await client.GetBulkStrings(key);
+            var dataRecieved = await client.Get(key);
+
+            var result = Encoding.UTF8.GetString(dataRecieved);
 
             Assert.Equal(data, result);
         }

@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-
+[assembly: InternalsVisibleToAttribute("Balbarak.Redis.Test")]
 namespace Balbarak.Redis
 {
     public class RedisClient

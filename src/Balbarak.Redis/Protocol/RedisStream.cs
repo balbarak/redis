@@ -13,8 +13,6 @@ namespace Balbarak.Redis.Protocol
 {
     internal class RedisStream : NetworkStream
     {
-        public const int BUFFER_SIZE = 2048;
-
         private const byte BULK_STRINGS = (byte)'$';
         private const byte ARRAYS = (byte)'*';
         private const byte ERRORS = (byte)'-';
@@ -50,7 +48,7 @@ namespace Balbarak.Redis.Protocol
             {
                 var size = ReadSize(ref buffer);
                 
-                while (true)
+                while (true && size > 0)
                 {
                     if (buffer.Length >= size)
                     {
@@ -67,6 +65,20 @@ namespace Balbarak.Redis.Protocol
                 }
 
                 return ms.ToArray();
+            }
+
+            if (firstByte == ERRORS)
+            {
+                var data = ProccessSimpleString(ref buffer);
+
+                return data.ToArray();
+            }
+
+            if (firstByte == INTEGERS)
+            {
+                var data = ProccessIntegers(ref buffer);
+
+                return data.ToArray();
             }
 
             return null;
@@ -87,15 +99,19 @@ namespace Balbarak.Redis.Protocol
             return result;
         }
 
-        private RedisProtocolDataType GetDataType(byte firstByte)
+        private byte[] ProccessIntegers(ref ReadOnlySequence<byte> buffer)
         {
-            if (firstByte == BULK_STRINGS)
-                return RedisProtocolDataType.BulkStrings;
+            var endPosition = buffer.PositionOf(END);
+            var newLine = buffer.PositionOf(NEW_LINE);
 
-            if (firstByte == SIMPLE_STRINGS)
-                return RedisProtocolDataType.SimpleStrings;
+            if (endPosition == null || newLine == null)
+                return null;
 
-            return RedisProtocolDataType.Unkown;
+            var result = buffer.Slice(1, endPosition.Value).ToArray();
+
+            buffer.Slice(1, newLine.Value);
+
+            return result;
         }
 
         private long ReadSize(ref ReadOnlySequence<byte> buffer)

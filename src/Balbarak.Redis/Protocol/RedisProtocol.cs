@@ -5,27 +5,32 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Balbarak.Redis.Protocol
 {
-    internal partial class RedisProtocol : RedisProtocolBase
+    internal class RedisProtocol
     {
-        //public const int BUFFER_SIZE = 8096;
-        public const int BUFFER_SIZE = 2;
+        protected Socket _socket;
 
         public RedisProtocol()
         {
+            _socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
         }
 
-        public async Task<string> Ping()
+        public async Task Connect(string host, int port)
         {
-            var dataToSend = $"PING \n".ToUTF8Bytes();
-
-            var result = await SendCommandInternal(dataToSend);
-
-            return Encoding.UTF8.GetString(result);
+            try
+            {
+                await _socket.ConnectAsync(host, port);
+            }
+            catch (Exception ex)
+            {
+                throw new RedisException($"Unable to connect to redis server {host}:{port}", ex);
+            }
         }
 
         public async Task<bool> Set(string key, string value)
@@ -53,25 +58,7 @@ namespace Balbarak.Redis.Protocol
             var rawData = await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);
 
-            //ValidateError(rawData);
-
             return rawData;
-        }
-
-        public async Task<string> GetBulkStrings(string key)
-        {
-            var dataToSend = new RedisCommandBuilder("GET")
-               .WithKey(key)
-               .Build();
-
-            var result = await SendCommandInternal(dataToSend)
-                .ConfigureAwait(false);
-
-            if (result.Length == 0)
-                throw new RedisException();
-
-
-            return ReadBulkStrings(ref result);
         }
 
         public async Task<bool> Exists(string key)
@@ -90,26 +77,13 @@ namespace Balbarak.Redis.Protocol
                 return true;
         }
 
-        private string ReadBulkStrings(ref byte[] redisRawData)
+        public async Task<string> Ping()
         {
-            var data = ReadData(ref redisRawData);
+            var dataToSend = $"PING \n".ToUTF8Bytes();
 
-            return Encoding.UTF8.GetString(data);
-        }
+            var result = await SendCommandInternal(dataToSend);
 
-        private string ReadSimpleString(byte[] redisRawData)
-        {
-            var span = new ReadOnlySpan<byte>(redisRawData);
-
-            if (redisRawData == null)
-                return null;
-
-            if (redisRawData[0] != (byte)'+')
-                return null;
-
-            var textBytes = span.Slice(1, redisRawData.Length - 3);
-
-            return Encoding.UTF8.GetString(textBytes);
+            return Encoding.UTF8.GetString(result);
         }
 
         private ReadOnlySpan<byte> ReadData(ref byte[] redisRawData)
@@ -179,34 +153,6 @@ namespace Balbarak.Redis.Protocol
 
             return await stream.ReadRedisBuffer();
         }
-
-        private async Task<byte[]> ReadRawData()
-        {
-            var stream = new RedisStream(_socket);
-
-            var result = new List<byte>();
-
-            var buffer = new byte[BUFFER_SIZE];
-
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-
-            var data = buffer.Skip(0).Take(bytesRead).ToArray();
-
-            result.AddRange(data);
-
-            while (!IsEndOfData(data))
-            {
-                bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-
-                data = buffer.Skip(0).Take(bytesRead).ToArray();
-
-                result.AddRange(data);
-            }
-
-            return result.ToArray();
-
-        }
-        
 
         private void ValidateError(byte[] redisRawData)
         {
