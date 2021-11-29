@@ -134,6 +134,5 @@ namespace Balbarak.Redis.Protocol
             return result;
         }
 
-
     }
 }
