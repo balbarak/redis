@@ -110,7 +110,7 @@ namespace Balbarak.Redis.Protocol
             {
                 var size = ReadSizeBlock(ref buffer, out var sizeData);
 
-                while (true)
+                while (true && size > 0)
                 {
                     if (buffer.Length > size)
                     {

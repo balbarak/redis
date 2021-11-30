@@ -32,6 +32,8 @@ namespace Balbarak.Redis.Test
 
             Assert.Equal("OK", result?.DataText);
 
+            stream = new RedisStream(protocol._socket);
+
             var getCmd = new RedisCommandBuilder("GET")
                 .WithKey(key)
                 .Build();
@@ -63,6 +65,8 @@ namespace Balbarak.Redis.Test
 
             Assert.Equal("OK", result?.DataText);
 
+            stream = new RedisStream(protocol._socket);
+
             var getCmd = new RedisCommandBuilder("GET")
                 .WithKey(key)
                 .Build();
@@ -71,6 +75,41 @@ namespace Balbarak.Redis.Test
             result = await stream.ReadRedisData();
 
             Assert.Equal(fileData, result?.Data);
+
+        }
+
+        [Fact]
+        public async Task Should_Set_And_Get_Large_Bytes()
+        {
+            var key = "largeBytes";
+
+            var protocol = await CreateProtocolAndConnect();
+            var stream = new RedisStream(protocol._socket);
+
+            var fileData = GetRandomByteArray(30000);
+
+            var setCmd = new RedisCommandBuilder("SET")
+                .WithKey(key)
+                .WithValue(fileData)
+                .Build();
+
+            await stream.WriteAsync(setCmd);
+
+            var result = await stream.ReadRedisData();
+
+            Assert.Equal("OK", result?.DataText);
+
+            stream = new RedisStream(protocol._socket);
+
+            var getCmd = new RedisCommandBuilder("GET")
+                .WithKey(key)
+                .Build();
+
+
+            await stream.WriteAsync(getCmd);
+            var readResult = await stream.ReadRedisData();
+
+            Assert.Equal(fileData, readResult?.Data);
 
         }
 
@@ -93,6 +132,8 @@ namespace Balbarak.Redis.Test
             var setResult = await stream.ReadRedisData();
 
             Assert.Equal("OK", setResult?.DataText);
+            
+            stream = new RedisStream(protocol._socket);
 
             var getCmd = new RedisCommandBuilder("GET")
                .WithKey(key)
@@ -123,6 +164,8 @@ namespace Balbarak.Redis.Test
             var setResult = await stream.ReadRedisData();
 
             Assert.Equal("OK", setResult?.DataText);
+            
+            stream = new RedisStream(protocol._socket);
 
             var getCmd = new RedisCommandBuilder("GET")
                .WithKey(key)

@@ -24,11 +24,9 @@ namespace Balbarak.Redis.Test
 
             Assert.True(setResult);
 
-            var dataRecieved = await client.Get(key);
+            var dataRecieved = await client.GetString(key);
 
-            var result = Encoding.UTF8.GetString(dataRecieved);
-
-            Assert.Equal(data, result);
+            Assert.Equal(data, dataRecieved);
         }
 
         [Fact]
@@ -56,11 +54,9 @@ namespace Balbarak.Redis.Test
 
             Assert.True(result);
 
-            var dataRecieved = await client.Get(key);
+            var dataRecieved = await client.GetString(key);
 
-            var dataStr = Encoding.UTF8.GetString(dataRecieved);
-
-            Assert.Equal(data, dataStr);
+            Assert.Equal(data, dataRecieved);
 
         }
 
@@ -69,9 +65,9 @@ namespace Balbarak.Redis.Test
         {
             var client = await CreateAndConnectClient();
 
-            var result = await client.Get(Guid.NewGuid().ToString().ToLower());
+            var result = await client.GetString(Guid.NewGuid().ToString().ToLower());
 
-            Assert.Empty(result);
+            Assert.Null(result);
         }
 
         [Fact]
@@ -132,11 +128,9 @@ namespace Balbarak.Redis.Test
 
             await client.Set(key, data);
 
-            var dataRecieved = await client.Get(key);
+            var dataRecieved = await client.GetString(key);
 
-            var result = Encoding.UTF8.GetString(dataRecieved);
-
-            Assert.Equal(data, result);
+            Assert.Equal(data, dataRecieved);
         }
 
         private async Task<RedisProtocol> CreateAndConnectClient()

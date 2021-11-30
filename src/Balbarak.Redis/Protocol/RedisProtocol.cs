@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Balbarak.Redis.Data;
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -40,25 +41,26 @@ namespace Balbarak.Redis.Protocol
                 .WithValue(value)
                 .Build();
 
-            var redisRawData = await SendCommandInternal(dataToSend);
+            var result = await SendCommandInternal(dataToSend);
 
-            ValidateError(redisRawData);
+            ValidateResult(result);
 
-            var resultText = Encoding.UTF8.GetString(redisRawData);
+            return true;
 
-            return resultText == RedisResponse.OK;
         }
 
-        public async Task<byte[]> Get(string key)
+        public async Task<string> GetString(string key)
         {
             var dataToSend = new RedisCommandBuilder("GET")
                 .WithKey(key)
                 .Build();
 
-            var rawData = await SendCommandInternal(dataToSend)
+            var result = await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);
 
-            return rawData;
+            ValidateResult(result);
+
+            return result?.DataText; 
         }
 
         public async Task<bool> Exists(string key)
@@ -67,11 +69,9 @@ namespace Balbarak.Redis.Protocol
               .WithKey(key)
               .Build();
 
-            var redisRawData = await SendCommandInternal(dataToSend);
+            var result = await SendCommandInternal(dataToSend);
 
-            var result = ReadInteger(ref redisRawData);
-
-            if (result == 0)
+            if (result.DataText == "0")
                 return false;
             else
                 return true;
@@ -79,92 +79,31 @@ namespace Balbarak.Redis.Protocol
 
         public async Task<string> Ping()
         {
-            var dataToSend = $"PING \n".ToUTF8Bytes();
+            var dataToSend = new RedisCommandBuilder("Ping").Build();
 
             var result = await SendCommandInternal(dataToSend);
 
-            return Encoding.UTF8.GetString(result);
+            return result.DataText;
         }
 
-        private ReadOnlySpan<byte> ReadData(ref byte[] redisRawData)
+        private async Task<RedisDataBlock> SendCommandInternal(byte[] data)
         {
-            var span = new ReadOnlySpan<byte>(redisRawData);
-
-            var size = ReadDataSize(ref redisRawData, out int startIndex);
-
-            return span.Slice(startIndex, size);
-        }
-
-        private int ReadDataSize(ref byte[] redisRawData, out int startIndex)
-        {
-            var span = new ReadOnlySpan<byte>(redisRawData);
-            var size = new ReadOnlySpan<byte>();
-
-            startIndex = 0;
-
-            for (int i = 0; i < redisRawData.Length; i++)
-            {
-                var current = redisRawData[i];
-
-                if (i == 0 && (current == (byte)'$' || current == (byte)'-'))
-                    continue;
-
-                if (i == 1 && current == (byte)'-')
-                    return 0;
-
-                if (current == (byte)'\r')
-                {
-                    startIndex = i + 2;
-
-                    size = span.Slice(1, i - 1);
-
-                    break;
-                }
-            }
-
-            var sizeText = Encoding.UTF8.GetString(size);
-
-            Int32.TryParse(sizeText, out int result);
-
-            return result;
-        }
-
-        private int ReadInteger(ref byte[] redisRawData)
-        {
-            if (redisRawData == null)
-                throw new RedisException("There is no data to parse");
-
-            if (redisRawData[0] != (byte)':')
-                throw new RedisException("Data recieved is not integer");
-
-            var text = Encoding.UTF8.GetString(redisRawData, 1, redisRawData.Length - 3);
-
-            int.TryParse(text, out int result);
-
-            return result;
-        }
-
-        private async Task<byte[]> SendCommandInternal(byte[] data)
-        {
-            var stream = new RedisStream(_socket);
-
             var sentBytes = await _socket.SendAsync(data, SocketFlags.None)
                 .ConfigureAwait(false);
 
-            return await stream.ReadRedisBuffer();
+            var stream = new RedisStream(_socket);
+
+            return await stream.ReadRedisData();
         }
 
-        private void ValidateError(byte[] redisRawData)
+        private void ValidateResult(RedisDataBlock result)
         {
-            if (redisRawData == null)
-                throw new RedisException("No data recieved from redis");
+            if (result == null)
+                return;
 
-            if (redisRawData[0] == (byte)'-')
-            {
-                var errorMessage = Encoding.UTF8.GetString(redisRawData, 1, redisRawData.Length - 3);
-
-                throw new RedisException(errorMessage);
-            }
+            if (result.DataType == RedisDataType.Errors)
+                throw new RedisException(result.DataText);
         }
+
     }
 }
