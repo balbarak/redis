@@ -34,7 +34,7 @@ namespace Balbarak.Redis.Protocol
             }
         }
 
-        public async Task<bool> Set(string key, string value)
+        public async Task<bool> SetString(string key, string value)
         {
             var dataToSend = new RedisCommandBuilder("SET")
                 .WithKey(key)
@@ -45,7 +45,21 @@ namespace Balbarak.Redis.Protocol
 
             ValidateResult(result);
 
-            return true;
+            return result.DataText == RedisResponse.OK;
+        }
+
+        public async Task<bool> SetBytes(string key, byte[] value)
+        {
+            var dataToSend = new RedisCommandBuilder("SET")
+                .WithKey(key)
+                .WithValue(value)
+                .Build();
+
+            var result = await SendCommandInternal(dataToSend);
+
+            ValidateResult(result);
+
+            return result.DataText == RedisResponse.OK;
 
         }
 
@@ -61,6 +75,20 @@ namespace Balbarak.Redis.Protocol
             ValidateResult(result);
 
             return result?.DataText; 
+        }
+
+        public async Task<byte[]> GetBytes(string key)
+        {
+            var dataToSend = new RedisCommandBuilder("GET")
+                .WithKey(key)
+                .Build();
+
+            var result = await SendCommandInternal(dataToSend)
+                .ConfigureAwait(false);
+
+            ValidateResult(result);
+
+            return result?.Data;
         }
 
         public async Task<bool> Exists(string key)

@@ -18,5 +18,13 @@ namespace Balbarak.Redis.Test
 
             return client;
         }
+
+        protected byte[] GetRandomByteArray(int sizeInKb)
+        {
+            Random rnd = new Random();
+            byte[] b = new byte[sizeInKb * 1024]; // convert kb to byte
+            rnd.NextBytes(b);
+            return b;
+        }
     }
 }

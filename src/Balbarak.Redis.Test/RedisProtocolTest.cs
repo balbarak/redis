@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Balbarak.Redis.Test
 {
-    public class RedisProtocolTest
+    public class RedisProtocolTest : TestBase
     {
         [Fact]
         public async Task Should_Set_Data_With_Special_Characters()
@@ -20,7 +20,7 @@ namespace Balbarak.Redis.Test
 
             var data = "This data has \n\r with protocl characters ! and end with \n\r";
 
-            var setResult = await client.Set(key, data);
+            var setResult = await client.SetString(key, data);
 
             Assert.True(setResult);
 
@@ -36,7 +36,7 @@ namespace Balbarak.Redis.Test
 
             var data = "This is a test message from redis protocol client !";
 
-            var result = await client.Set("text", data);
+            var result = await client.SetString("text", data);
 
             Assert.True(result);
         }
@@ -50,7 +50,7 @@ namespace Balbarak.Redis.Test
 
             var data = "This is a test message from redis protocol client 333!";
 
-            var result = await client.Set(key, data);
+            var result = await client.SetString(key, data);
 
             Assert.True(result);
 
@@ -97,7 +97,7 @@ namespace Balbarak.Redis.Test
             
             var key = "welcomekey";
 
-            await client.Set(key, "hello world");
+            await client.SetString(key, "hello world");
 
             var result = await client.Exists(key);
 
@@ -126,9 +126,45 @@ namespace Balbarak.Redis.Test
 
             var data = Convert.ToBase64String(dataBytes);
 
-            await client.Set(key, data);
+            await client.SetString(key, data);
 
             var dataRecieved = await client.GetString(key);
+
+            Assert.Equal(data, dataRecieved);
+        }
+
+        [Fact]
+        public async Task Should_Set_And_Get_Bytes()
+        {
+            var key = "dataBytesFile";
+
+            var client = await CreateAndConnectClient();
+
+            var data = await File.ReadAllBytesAsync(@"Data\large.jpg");
+
+            var result = await client.SetBytes(key, data);
+
+            Assert.True(result);
+
+            var dataRecieved = await client.GetBytes(key);
+
+            Assert.Equal(data, dataRecieved);
+        }
+
+        [Fact]
+        public async Task Should_Set_And_Get_Large_Bytes()
+        {
+            var key = "large data bytes";
+
+            var client = await CreateAndConnectClient();
+
+            var data = GetRandomByteArray(90000);
+
+            var result = await client.SetBytes(key, data);
+
+            Assert.True(result);
+
+            var dataRecieved = await client.GetBytes(key);
 
             Assert.Equal(data, dataRecieved);
         }
