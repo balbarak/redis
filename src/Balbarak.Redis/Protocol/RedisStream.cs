@@ -89,20 +89,21 @@ namespace Balbarak.Redis.Protocol
 
         public async Task<RedisDataBlock> ReadRedisData()
         {
+            RedisDataBlock result = null;
+
             var reader = PipeReader.Create(this);
 
             var readResult = await reader.ReadAsync();
             var buffer = readResult.Buffer;
 
-            var bufferStr = Encoding.UTF8.GetString(buffer);
-
             var firstByte = buffer.FirstSpan[0];
 
+            //TODO: Remove duplicate allocation from RedisDataBlock
             if (firstByte == SIMPLE_STRINGS)
             {
-                ProccessSimpleString(ref buffer, out var data);
+                ProccessSimpleStringBlock(ref buffer, out var data);
 
-                return new RedisDataBlock(RedisDataType.SimpleStrings, buffer.ToArray(), data.ToArray());
+                result = new RedisDataBlock(RedisDataType.SimpleStrings, buffer.ToArray(), data.ToArray());
             }
 
             if (firstByte == BULK_STRINGS)
@@ -117,7 +118,9 @@ namespace Balbarak.Redis.Protocol
 
                         var data = buffer.Slice(sizeData.Start, size).ToArray();
 
-                        return new RedisDataBlock(RedisDataType.BulkStrings,rawData,data);
+                        result = new RedisDataBlock(RedisDataType.BulkStrings,rawData,data);
+
+                        break;
                     }
 
                     reader.AdvanceTo(buffer.Start, buffer.End);
@@ -125,9 +128,24 @@ namespace Balbarak.Redis.Protocol
                     buffer = readResult.Buffer;
                 }
             }
+
+            if (firstByte == ERRORS)
+            {
+                ProccessSimpleStringBlock(ref buffer, out var data);
+
+                result = new RedisDataBlock(RedisDataType.Errors, buffer.ToArray(), data.ToArray());
+            }
+
+            if (firstByte == INTEGERS)
+            {
+                ProccessIntegersBlock(ref buffer, out var data);
+
+                result = new RedisDataBlock(RedisDataType.Integers, buffer.ToArray(), data.ToArray());
+            }
+
             await reader.CompleteAsync();
 
-            return null;
+            return result;
         }
 
         private byte[] ProccessSimpleString(ref ReadOnlySequence<byte> buffer)
@@ -143,20 +161,6 @@ namespace Balbarak.Redis.Protocol
             buffer.Slice(1, newLine.Value);
 
             return result;
-        }
-
-        private void ProccessSimpleString(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> data)
-        {
-            var endPosition = buffer.PositionOf(END);
-            var newLine = buffer.PositionOf(NEW_LINE);
-
-            if (endPosition == null || newLine == null)
-            {
-                data = default;
-                return;
-            }
-
-            data = buffer.Slice(1, endPosition.Value);
         }
 
         private byte[] ProccessIntegers(ref ReadOnlySequence<byte> buffer)
@@ -196,6 +200,20 @@ namespace Balbarak.Redis.Protocol
             return result;
         }
 
+        private void ProccessSimpleStringBlock(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> data)
+        {
+            var endPosition = buffer.PositionOf(END);
+            var newLine = buffer.PositionOf(NEW_LINE);
+
+            if (endPosition == null || newLine == null)
+            {
+                data = default;
+                return;
+            }
+
+            data = buffer.Slice(1, endPosition.Value);
+        }
+
         private long ReadSizeBlock(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> data)
         {
             var startPosition = buffer.PositionOf((byte)'$');
@@ -217,6 +235,20 @@ namespace Balbarak.Redis.Protocol
             long.TryParse(sizeStr, out long result);
 
             return result;
+        }
+
+        private void ProccessIntegersBlock(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> data)
+        {
+            var endPosition = buffer.PositionOf(END);
+            var newLine = buffer.PositionOf(NEW_LINE);
+
+            if (endPosition == null || newLine == null)
+            {
+                data = default;
+                return;
+            }
+
+            data = buffer.Slice(1, endPosition.Value);
         }
     }
 }

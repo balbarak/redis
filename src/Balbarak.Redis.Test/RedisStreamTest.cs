@@ -1,4 +1,5 @@
-﻿using Balbarak.Redis.Protocol;
+﻿using Balbarak.Redis.Data;
+using Balbarak.Redis.Protocol;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -131,6 +132,46 @@ namespace Balbarak.Redis.Test
             var result = await stream.ReadRedisData();
 
             Assert.Equal(value, result?.DataText);
+        }
+
+        [Fact]
+        public async Task Should_Read_Error()
+        {
+            var key = "KeyTest";
+            var value = "W00t";
+
+            var protocol = await CreateProtocolAndConnect();
+
+            var stream = new RedisStream(protocol._socket);
+
+            var setCmd = new RedisCommandBuilder("SETT")
+                .WithKey(key)
+                .WithValue(value)
+                .Build();
+
+            await stream.WriteAsync(setCmd);
+            var result = await stream.ReadRedisData();
+
+            Assert.Equal(RedisDataType.Errors, result?.DataType);
+        }
+
+        [Fact]
+        public async Task Should_Read_Intgers()
+        {
+            var key = "INTEGERKEY";
+
+            var protocol = await CreateProtocolAndConnect();
+
+            var stream = new RedisStream(protocol._socket);
+
+            var setCmd = new RedisCommandBuilder("INCR")
+                .WithKey(key)
+                .Build();
+
+            await stream.WriteAsync(setCmd);
+            var result = await stream.ReadRedisData();
+
+            Assert.Equal(RedisDataType.Integers, result?.DataType);
         }
 
 
