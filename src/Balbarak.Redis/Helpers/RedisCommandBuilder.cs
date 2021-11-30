@@ -48,55 +48,48 @@ namespace Balbarak.Redis
 
         public byte[] Build()
         {
-            _fullCommand.Append($"*{_numberOfSegments}\r\n");
-            _fullCommand.Append($"${_command.Length}\r\n");
-            _fullCommand.Append($"{_command}\r\n");
+            byte[] result = null;
 
-            if (!string.IsNullOrWhiteSpace(_key))
+            using (MemoryStream ms = new MemoryStream())
             {
-                var size = Encoding.UTF8.GetByteCount(_key);
+                var command = Encoding.ASCII.GetBytes($"*{_numberOfSegments}\r\n${_command.Length}\r\n{_command}\r\n");
 
-                _fullCommand.Append($"${size}\r\n");
+                ms.Write(command,0,command.Length);
 
-                _fullCommand.Append($"{_key}\r\n");
+                if (!string.IsNullOrWhiteSpace(_key))
+                {
+                    var keySize = Encoding.UTF8.GetByteCount(_key);
+
+                    var keyData = Encoding.UTF8.GetBytes($"${keySize}\r\n{_key}\r\n");
+
+                    ms.Write(keyData,0,keyData.Length);
+                }
+
+                if (!string.IsNullOrWhiteSpace(_value))
+                {
+                    var valueSize = Encoding.UTF8.GetByteCount(_value);
+
+                    var valueData = Encoding.UTF8.GetBytes($"${valueSize}\r\n{_value}\r\n");
+
+                    ms.Write(valueData,0,valueData.Length);
+                }
+
+                if (_valueBytes != null && _valueBytes.Length > 0)
+                {
+                    var sizeData = Encoding.ASCII.GetBytes($"${_valueBytes.Length}\r\n");
+
+                    ms.Write(sizeData,0,sizeData.Length);
+
+                    ms.Write(_valueBytes,0,_valueBytes.Length);
+
+                    ms.WriteByte((byte)'\r');
+                    ms.WriteByte((byte)'\n');
+                }
+
+                result = ms.ToArray();
             }
 
-            if (!string.IsNullOrWhiteSpace(_value))
-            {
-                var size = Encoding.UTF8.GetByteCount(_value);
-                _fullCommand.Append($"${size}\r\n");
-                _fullCommand.Append($"{_value}\r\n");
-            }
-
-            //if (_valueBytes != null)
-            //{
-            //    var base64 = Convert.ToBase64String(_valueBytes);
-            //    _fullCommand.Append($"${base64.Length}\r\n");
-            //    _fullCommand.Append($"{base64}\r\n");
-            //}
-
-            if (_valueBytes != null)
-            {
-                List<byte> result = new List<byte>();
-
-                _fullCommand.Append($"${_valueBytes.Length}\r\n");
-
-                var firstCmd = _fullCommand.ToString();
-
-                result.AddRange(Encoding.UTF8.GetBytes(firstCmd));
-                result.AddRange(_valueBytes);
-
-                result.Add((byte)'\r');
-                result.Add((byte)'\n');
-
-                return result.ToArray();
-                //_fullCommand.Append($"${base64.Length}\r\n");
-                //_fullCommand.Append($"{base64}\r\n");
-            }
-
-            var cmd = _fullCommand.ToString();
-
-            return Encoding.UTF8.GetBytes(cmd);
+            return result;
         }
     }
 }

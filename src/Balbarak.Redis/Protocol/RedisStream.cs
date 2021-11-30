@@ -111,13 +111,11 @@ namespace Balbarak.Redis.Protocol
 
                 while (true)
                 {
-                    if (buffer.Length >= size)
+                    if (buffer.Length > size)
                     {
                         var rawData = buffer.ToArray();
 
-                        var endPosition = buffer.Length > size ? buffer.Length : size;
-
-                        var data = buffer.Slice(sizeData.Start, endPosition).ToArray();
+                        var data = buffer.Slice(sizeData.Start, size).ToArray();
 
                         return new RedisDataBlock(RedisDataType.BulkStrings,rawData,data);
                     }
