@@ -19,8 +19,7 @@ namespace Balbarak.Redis.Test
 
             var protocol = await CreateProtocolAndConnect();
             var stream = new RedisStream(protocol._socket);
-            stream.Flush();
-
+         
             //var fileData = File.ReadAllBytes(@"Data\large.jpg");
             var fileData = GetRandomByteArray(20);
 
