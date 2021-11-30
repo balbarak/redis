@@ -49,7 +49,6 @@ namespace Balbarak.Redis
         public byte[] Build()
         {
             _fullCommand.Append($"*{_numberOfSegments}\r\n");
-
             _fullCommand.Append($"${_command.Length}\r\n");
             _fullCommand.Append($"{_command}\r\n");
 
@@ -65,18 +64,34 @@ namespace Balbarak.Redis
             if (!string.IsNullOrWhiteSpace(_value))
             {
                 var size = Encoding.UTF8.GetByteCount(_value);
-
                 _fullCommand.Append($"${size}\r\n");
-
                 _fullCommand.Append($"{_value}\r\n");
             }
 
+            //if (_valueBytes != null)
+            //{
+            //    var base64 = Convert.ToBase64String(_valueBytes);
+            //    _fullCommand.Append($"${base64.Length}\r\n");
+            //    _fullCommand.Append($"{base64}\r\n");
+            //}
+
             if (_valueBytes != null)
             {
-                var base64 = Convert.ToBase64String(_valueBytes);
+                List<byte> result = new List<byte>();
 
-                _fullCommand.Append($"${base64.Length}\r\n");
-                _fullCommand.Append($"{base64}\r\n");
+                _fullCommand.Append($"${_valueBytes.Length}\r\n");
+
+                var firstCmd = _fullCommand.ToString();
+
+                result.AddRange(Encoding.UTF8.GetBytes(firstCmd));
+                result.AddRange(_valueBytes);
+
+                result.Add((byte)'\r');
+                result.Add((byte)'\n');
+
+                return result.ToArray();
+                //_fullCommand.Append($"${base64.Length}\r\n");
+                //_fullCommand.Append($"{base64}\r\n");
             }
 
             var cmd = _fullCommand.ToString();
