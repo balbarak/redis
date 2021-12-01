@@ -1,4 +1,5 @@
-﻿using Balbarak.Redis.Protocol;
+﻿using Balbarak.Redis.Data;
+using Balbarak.Redis.Protocol;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,11 +23,11 @@ namespace Balbarak.Redis.Test
 
             var setResult = await client.SetString(key, data);
 
-            Assert.True(setResult);
+            ConfirmSuccessResult(setResult);
 
             var dataRecieved = await client.GetString(key);
 
-            Assert.Equal(data, dataRecieved);
+            Assert.Equal(data, dataRecieved?.DataText);
         }
 
         [Fact]
@@ -38,7 +39,7 @@ namespace Balbarak.Redis.Test
 
             var result = await client.SetString("text", data);
 
-            Assert.True(result);
+            ConfirmSuccessResult(result);
         }
 
         [Fact]
@@ -52,11 +53,11 @@ namespace Balbarak.Redis.Test
 
             var result = await client.SetString(key, data);
 
-            Assert.True(result);
+            ConfirmSuccessResult(result);
 
             var dataRecieved = await client.GetString(key);
 
-            Assert.Equal(data, dataRecieved);
+            Assert.Equal(data, dataRecieved?.DataText);
 
         }
 
@@ -75,9 +76,9 @@ namespace Balbarak.Redis.Test
         {
             var client = await CreateAndConnectClient();
 
-            var ping = await client.Ping();
+            var result = await client.Ping();
 
-            Assert.Equal("PONG", ping);
+            Assert.Equal("PONG", result.DataText);
         }
 
         [Fact]
@@ -85,9 +86,9 @@ namespace Balbarak.Redis.Test
         {
             var client = await CreateAndConnectClient();
 
-            var result = await client.Exists("fslfsd");
+            var result = await client.Exists(Guid.NewGuid().ToString().ToLower());
 
-            Assert.False(result);
+            ConfirmFalseResult(result);
         }
 
         [Fact]
@@ -97,24 +98,15 @@ namespace Balbarak.Redis.Test
             
             var key = "welcomekey";
 
-            await client.SetString(key, "hello world");
+            var result = await client.SetString(key, "hello world");
 
-            var result = await client.Exists(key);
+            ConfirmSuccessResult(result);
 
-            Assert.True(result);
+            var existResult = await client.Exists(key);
+
+            ConfirmTrueResult(existResult);
         }
-
-        [Fact]
-        public void Should_Handle_Connection_Failed()
-        {
-            var client = new RedisProtocol();
-
-            Assert.Throws<RedisException>(() =>
-            {
-                client.Connect("localhost", 32).GetAwaiter().GetResult();
-            });
-        }
-
+        
         [Fact]
         public async Task Should_Set_Base_64_Data()
         {
@@ -126,11 +118,13 @@ namespace Balbarak.Redis.Test
 
             var data = Convert.ToBase64String(dataBytes);
 
-            await client.SetString(key, data);
+            var result = await client.SetString(key, data);
+
+            ConfirmSuccessResult(result);
 
             var dataRecieved = await client.GetString(key);
 
-            Assert.Equal(data, dataRecieved);
+            Assert.Equal(data, dataRecieved?.DataText);
         }
 
         [Fact]
@@ -144,11 +138,11 @@ namespace Balbarak.Redis.Test
 
             var result = await client.SetBytes(key, data);
 
-            Assert.True(result);
+            ConfirmSuccessResult(result);
 
             var dataRecieved = await client.GetBytes(key);
 
-            Assert.Equal(data, dataRecieved);
+            Assert.Equal(data, dataRecieved?.Data);
         }
 
         [Fact]
@@ -162,11 +156,11 @@ namespace Balbarak.Redis.Test
 
             var result = await client.SetBytes(key, data);
 
-            Assert.True(result);
+            ConfirmSuccessResult(result);
 
             var dataRecieved = await client.GetBytes(key);
 
-            Assert.Equal(data, dataRecieved);
+            Assert.Equal(data, dataRecieved?.Data);
         }
 
         private async Task<RedisProtocol> CreateAndConnectClient()
@@ -176,6 +170,27 @@ namespace Balbarak.Redis.Test
             await client.Connect(Connections.HOST, Connections.PORT);
 
             return client;
+        }
+
+        private void ConfirmSuccessResult(RedisDataBlock result)
+        {
+            Assert.Equal(RedisDataType.SimpleStrings, result?.DataType);
+
+            Assert.Equal(RedisResponse.OK, result.DataText);
+        }
+
+        private void ConfirmTrueResult(RedisDataBlock result)
+        {
+            Assert.Equal(RedisDataType.Integers, result?.DataType);
+
+            Assert.Equal("1", result.DataText);
+        }
+
+        private void ConfirmFalseResult(RedisDataBlock result)
+        {
+            Assert.Equal(RedisDataType.Integers, result?.DataType);
+
+            Assert.Equal("0", result.DataText);
         }
     }
 }

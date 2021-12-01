@@ -15,7 +15,7 @@ namespace Balbarak.Redis.Protocol
 {
     internal class RedisProtocol
     {
-        public Socket _socket;
+        internal Socket _socket;
 
         public RedisProtocol()
         {
@@ -24,94 +24,69 @@ namespace Balbarak.Redis.Protocol
 
         public async Task Connect(string host, int port)
         {
-            try
-            {
-                await _socket.ConnectAsync(host, port);
-            }
-            catch (Exception ex)
-            {
-                throw new RedisException($"Unable to connect to redis server {host}:{port}", ex);
-            }
+            await _socket.ConnectAsync(host, port)
+                .ConfigureAwait(false);
         }
 
-        public async Task<bool> SetString(string key, string value)
+        public async Task<RedisDataBlock> SetString(string key, string value)
         {
             var dataToSend = new RedisCommandBuilder("SET")
                 .WithKey(key)
                 .WithValue(value)
                 .Build();
 
-            var result = await SendCommandInternal(dataToSend);
-
-            ValidateResult(result);
-
-            return result.DataText == RedisResponse.OK;
+            return await SendCommandInternal(dataToSend)
+                .ConfigureAwait(false);
         }
 
-        public async Task<bool> SetBytes(string key, byte[] value)
+        public async Task<RedisDataBlock> SetBytes(string key, byte[] value)
         {
             var dataToSend = new RedisCommandBuilder("SET")
                 .WithKey(key)
                 .WithValue(value)
                 .Build();
 
-            var result = await SendCommandInternal(dataToSend);
-
-            ValidateResult(result);
-
-            return result.DataText == RedisResponse.OK;
-
+            return await SendCommandInternal(dataToSend)
+                .ConfigureAwait(false);
         }
 
-        public async Task<string> GetString(string key)
+        public async Task<RedisDataBlock> GetString(string key)
         {
             var dataToSend = new RedisCommandBuilder("GET")
                 .WithKey(key)
                 .Build();
 
-            var result = await SendCommandInternal(dataToSend)
+            return await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);
 
-            ValidateResult(result);
-
-            return result?.DataText; 
         }
 
-        public async Task<byte[]> GetBytes(string key)
+        public async Task<RedisDataBlock> GetBytes(string key)
         {
             var dataToSend = new RedisCommandBuilder("GET")
                 .WithKey(key)
                 .Build();
 
-            var result = await SendCommandInternal(dataToSend)
+            return await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);
-
-            ValidateResult(result);
-
-            return result?.Data;
         }
 
-        public async Task<bool> Exists(string key)
+        public async Task<RedisDataBlock> Exists(string key)
         {
             var dataToSend = new RedisCommandBuilder("EXISTS")
               .WithKey(key)
               .Build();
 
-            var result = await SendCommandInternal(dataToSend);
-
-            if (result.DataText == "0")
-                return false;
-            else
-                return true;
+            return await SendCommandInternal(dataToSend)
+                .ConfigureAwait(false);
         }
 
-        public async Task<string> Ping()
+        public async Task<RedisDataBlock> Ping()
         {
             var dataToSend = new RedisCommandBuilder("Ping").Build();
 
-            var result = await SendCommandInternal(dataToSend);
-
-            return result.DataText;
+            return  await SendCommandInternal(dataToSend)
+                .ConfigureAwait(false);
         }
 
         private async Task<RedisDataBlock> SendCommandInternal(byte[] data)
@@ -121,16 +96,8 @@ namespace Balbarak.Redis.Protocol
 
             var stream = new RedisStream(_socket);
 
-            return await stream.ReadRedisData();
-        }
-
-        private void ValidateResult(RedisDataBlock result)
-        {
-            if (result == null)
-                return;
-
-            if (result.DataType == RedisDataType.Errors)
-                throw new RedisException(result.DataText);
+            return await stream.ReadRedisData()
+                .ConfigureAwait(false);
         }
 
     }

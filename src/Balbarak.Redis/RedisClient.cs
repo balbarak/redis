@@ -10,8 +10,6 @@ namespace Balbarak.Redis
 {
     public class RedisClient
     {
-        private int BUFFER_SIZE = 8096;
-
         private Socket _socket;
         private string _host;
         private int _prot;
