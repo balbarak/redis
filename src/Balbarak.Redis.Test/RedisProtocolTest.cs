@@ -72,16 +72,6 @@ namespace Balbarak.Redis.Test
         }
 
         [Fact]
-        public async Task Should_Ping()
-        {
-            var client = await CreateAndConnectClient();
-
-            var result = await client.Ping();
-
-            Assert.Equal("PONG", result.DataText);
-        }
-
-        [Fact]
         public async Task Should_Return_False_When_No_Key()
         {
             var client = await CreateAndConnectClient();
@@ -161,6 +151,16 @@ namespace Balbarak.Redis.Test
             var dataRecieved = await client.GetBytes(key);
 
             Assert.Equal(data, dataRecieved?.Data);
+        }
+
+        [Fact]
+        public async Task Should_Ping()
+        {
+            var client = await CreateAndConnectClient();
+
+            var result = await client.Ping();
+
+            Assert.Equal("PONG", result.DataText);
         }
 
         private async Task<RedisProtocol> CreateAndConnectClient()

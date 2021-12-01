@@ -51,6 +51,11 @@ namespace Balbarak.Redis.Protocol
             {
                 var size = ReadSizeBlock(ref buffer, out var sizeData);
 
+                if (size == -1)
+                {
+                    result = new RedisDataBlock(RedisDataType.EmptyBulkStrings, buffer.ToArray(), sizeData.ToArray());
+                }
+
                 while (true && size > 0)
                 {
                     if (buffer.Length > size)

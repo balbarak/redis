@@ -12,6 +12,7 @@ namespace Balbarak.Redis.Data
         Integers,
         Arrays,
         Errors,
-        BulkStrings
+        BulkStrings,
+        EmptyBulkStrings
 }
 }
