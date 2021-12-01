@@ -68,7 +68,7 @@ namespace Balbarak.Redis.Test
 
             var result = await client.GetString(Guid.NewGuid().ToString().ToLower());
 
-            Assert.Null(result);
+            Assert.Empty(result?.DataText);
         }
 
         [Fact]

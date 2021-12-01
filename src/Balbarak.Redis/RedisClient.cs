@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Balbarak.Redis.Protocol;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -10,10 +11,9 @@ namespace Balbarak.Redis
 {
     public class RedisClient
     {
-        private Socket _socket;
         private string _host;
         private int _prot;
-        private NetworkStream _stream;
+        private RedisProtocol _protocol;
 
         public bool IsConnected { get; private set; }
 
@@ -24,26 +24,23 @@ namespace Balbarak.Redis
             _host = host;
             _prot = port;
 
-            Setup();
+            _protocol = new RedisProtocol();
         }
 
         public async Task Connect()
         {
-            await _socket.ConnectAsync(_host, _prot);
+            try
+            {
+                await _protocol.Connect(_host, _prot);
 
-            _stream = new NetworkStream(_socket);
+                OnConnected?.Invoke(this, default);
+            }
+            catch (Exception ex)
+            {
+                throw new RedisException("Unable to connect to redis server", ex);
+            }
 
         }
 
-        public async Task Ping()
-        {
-
-        }
-
-        private void Setup()
-        {
-            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            
-        }
     }
 }
