@@ -33,10 +33,13 @@ namespace Balbarak.Redis
             {
                 await _protocol.Connect(_host, _prot);
 
+                IsConnected = true;
                 OnConnected?.Invoke(this, default);
             }
             catch (Exception ex)
             {
+                IsConnected = false;
+
                 throw new RedisException("Unable to connect to redis server", ex);
             }
 

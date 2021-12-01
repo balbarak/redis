@@ -21,11 +21,11 @@ namespace Balbarak.Redis.Test
 
             var data = "This data has \n\r with protocl characters ! and end with \n\r";
 
-            var setResult = await client.SetString(key, data);
+            var setResult = await client.Set(key, data);
 
             ConfirmSuccessResult(setResult);
 
-            var dataRecieved = await client.GetString(key);
+            var dataRecieved = await client.Get(key);
 
             Assert.Equal(data, dataRecieved?.DataText);
         }
@@ -37,7 +37,7 @@ namespace Balbarak.Redis.Test
 
             var data = "This is a test message from redis protocol client !";
 
-            var result = await client.SetString("text", data);
+            var result = await client.Set("text", data);
 
             ConfirmSuccessResult(result);
         }
@@ -51,11 +51,11 @@ namespace Balbarak.Redis.Test
 
             var data = "This is a test message from redis protocol client 333!";
 
-            var result = await client.SetString(key, data);
+            var result = await client.Set(key, data);
 
             ConfirmSuccessResult(result);
 
-            var dataRecieved = await client.GetString(key);
+            var dataRecieved = await client.Get(key);
 
             Assert.Equal(data, dataRecieved?.DataText);
 
@@ -66,7 +66,7 @@ namespace Balbarak.Redis.Test
         {
             var client = await CreateAndConnectClient();
 
-            var result = await client.GetString(Guid.NewGuid().ToString().ToLower());
+            var result = await client.Get(Guid.NewGuid().ToString().ToLower());
 
             Assert.Empty(result?.DataText);
         }
@@ -88,7 +88,7 @@ namespace Balbarak.Redis.Test
             
             var key = "welcomekey";
 
-            var result = await client.SetString(key, "hello world");
+            var result = await client.Set(key, "hello world");
 
             ConfirmSuccessResult(result);
 
@@ -108,11 +108,11 @@ namespace Balbarak.Redis.Test
 
             var data = Convert.ToBase64String(dataBytes);
 
-            var result = await client.SetString(key, data);
+            var result = await client.Set(key, data);
 
             ConfirmSuccessResult(result);
 
-            var dataRecieved = await client.GetString(key);
+            var dataRecieved = await client.Get(key);
 
             Assert.Equal(data, dataRecieved?.DataText);
         }
@@ -126,11 +126,11 @@ namespace Balbarak.Redis.Test
 
             var data = await File.ReadAllBytesAsync(@"Data\large.jpg");
 
-            var result = await client.SetBytes(key, data);
+            var result = await client.Set(key, data);
 
             ConfirmSuccessResult(result);
 
-            var dataRecieved = await client.GetBytes(key);
+            var dataRecieved = await client.Get(key);
 
             Assert.Equal(data, dataRecieved?.Data);
         }
@@ -144,11 +144,11 @@ namespace Balbarak.Redis.Test
 
             var data = GetRandomByteArray(90000);
 
-            var result = await client.SetBytes(key, data);
+            var result = await client.Set(key, data);
 
             ConfirmSuccessResult(result);
 
-            var dataRecieved = await client.GetBytes(key);
+            var dataRecieved = await client.Get(key);
 
             Assert.Equal(data, dataRecieved?.Data);
         }
