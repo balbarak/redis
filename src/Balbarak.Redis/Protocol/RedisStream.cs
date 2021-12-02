@@ -53,7 +53,7 @@ namespace Balbarak.Redis.Protocol
 
                 if (size == -1)
                 {
-                    result = new RedisDataBlock(RedisDataType.EmptyBulkStrings, buffer.ToArray(), sizeData.ToArray());
+                    result = new RedisDataBlock(RedisDataType.EmptyBulkStrings, buffer, sizeData.Start,sizeData.End);
                 }
 
                 while (true && size > 0)
@@ -88,58 +88,6 @@ namespace Balbarak.Redis.Protocol
             }
 
             await reader.CompleteAsync();
-
-            return result;
-        }
-
-        private byte[] ProccessSimpleString(ref ReadOnlySequence<byte> buffer)
-        {
-            var endPosition = buffer.PositionOf(END);
-            var newLine = buffer.PositionOf(NEW_LINE);
-
-            if (endPosition == null || newLine == null)
-                return null;
-
-            var result = buffer.Slice(1, endPosition.Value).ToArray();
-
-            buffer.Slice(1, newLine.Value);
-
-            return result;
-        }
-
-        private byte[] ProccessIntegers(ref ReadOnlySequence<byte> buffer)
-        {
-            var endPosition = buffer.PositionOf(END);
-            var newLine = buffer.PositionOf(NEW_LINE);
-
-            if (endPosition == null || newLine == null)
-                return null;
-
-            var result = buffer.Slice(1, endPosition.Value).ToArray();
-
-            buffer.Slice(1, newLine.Value);
-
-            return result;
-        }
-
-        private long ReadSize(ref ReadOnlySequence<byte> buffer)
-        {
-            var startPosition = buffer.PositionOf((byte)'$');
-            var endPosition = buffer.PositionOf((byte)'\r');
-            var dataEnd = buffer.PositionOf((byte)'\n');
-
-            if (startPosition == null || endPosition == null || dataEnd == null)
-            {
-                return 0;
-            }
-
-            var sizeData = buffer.Slice(1, endPosition.Value);
-
-            var sizeStr = Encoding.UTF8.GetString(sizeData);
-
-            buffer = buffer.Slice(buffer.GetPosition(1, dataEnd.Value));
-
-            long.TryParse(sizeStr, out long result);
 
             return result;
         }
