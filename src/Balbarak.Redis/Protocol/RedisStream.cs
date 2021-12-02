@@ -44,7 +44,7 @@ namespace Balbarak.Redis.Protocol
             {
                 ProccessSimpleStringBlock(ref buffer, out var data);
 
-                result = new RedisDataBlock(RedisDataType.SimpleStrings, buffer.ToArray(), data.ToArray());
+                result = new RedisDataBlock(RedisDataType.SimpleStrings, buffer, data.Start,data.End);
             }
 
             if (firstByte == BULK_STRINGS)
@@ -60,11 +60,9 @@ namespace Balbarak.Redis.Protocol
                 {
                     if (buffer.Length > size)
                     {
-                        var rawData = buffer.ToArray();
+                        var data = buffer.Slice(sizeData.Start, size);
 
-                        var data = buffer.Slice(sizeData.Start, size).ToArray();
-
-                        result = new RedisDataBlock(RedisDataType.BulkStrings,rawData,data);
+                        result = new RedisDataBlock(RedisDataType.BulkStrings, buffer, data.Start, data.End);
 
                         break;
                     }
@@ -79,14 +77,14 @@ namespace Balbarak.Redis.Protocol
             {
                 ProccessSimpleStringBlock(ref buffer, out var data);
 
-                result = new RedisDataBlock(RedisDataType.Errors, buffer.ToArray(), data.ToArray());
+                result = new RedisDataBlock(RedisDataType.Errors, buffer, data.Start,data.End);
             }
 
             if (firstByte == INTEGERS)
             {
                 ProccessIntegersBlock(ref buffer, out var data);
 
-                result = new RedisDataBlock(RedisDataType.Integers, buffer.ToArray(), data.ToArray());
+                result = new RedisDataBlock(RedisDataType.Integers, buffer, data.Start, data.End);
             }
 
             await reader.CompleteAsync();

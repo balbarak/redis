@@ -55,7 +55,7 @@ namespace Balbarak.Redis
 
             ValidateResult(result);
 
-            return result.DataText == RedisResponse.OK;
+            return result.Result == RedisResponse.OK;
         }
 
         public async Task<string> GetStrings(string key)
@@ -67,14 +67,14 @@ namespace Balbarak.Redis
 
             ValidateResult(result);
 
-            return result.DataText;
+            return result.Result;
         }
 
 
         private void ValidateResult(RedisDataBlock result)
         {
-            if (result.DataType == RedisDataType.Errors)
-                throw new RedisException(result.DataText);
+            if (result.Type == RedisDataType.Errors)
+                throw new RedisException(result.Result);
         }
     }
 }

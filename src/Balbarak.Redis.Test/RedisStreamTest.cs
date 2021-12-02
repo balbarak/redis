@@ -30,7 +30,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(setCmd);
             var result = await stream.ReadRedisData();
 
-            Assert.Equal("OK", result?.DataText);
+            Assert.Equal("OK", result?.Result);
 
             stream = new RedisStream(protocol._socket);
 
@@ -41,7 +41,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(getCmd);
             result = await stream.ReadRedisData();
 
-            Assert.Equal(fileData, result?.Data);
+            Assert.Equal(fileData, result?.ResultData);
 
         }
 
@@ -63,7 +63,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(setCmd);
             var result = await stream.ReadRedisData();
 
-            Assert.Equal("OK", result?.DataText);
+            Assert.Equal("OK", result?.Result);
 
             stream = new RedisStream(protocol._socket);
 
@@ -74,7 +74,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(getCmd);
             result = await stream.ReadRedisData();
 
-            Assert.Equal(fileData, result?.Data);
+            Assert.Equal(fileData, result?.ResultData);
 
         }
 
@@ -97,7 +97,7 @@ namespace Balbarak.Redis.Test
 
             var result = await stream.ReadRedisData();
 
-            Assert.Equal("OK", result?.DataText);
+            Assert.Equal("OK", result?.Result);
 
             stream = new RedisStream(protocol._socket);
 
@@ -109,7 +109,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(getCmd);
             var readResult = await stream.ReadRedisData();
 
-            Assert.Equal(fileData, readResult?.Data);
+            Assert.Equal(fileData, readResult?.ResultData);
 
         }
 
@@ -131,7 +131,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(setCmd);
             var setResult = await stream.ReadRedisData();
 
-            Assert.Equal("OK", setResult?.DataText);
+            Assert.Equal("OK", setResult?.Result);
             
             stream = new RedisStream(protocol._socket);
 
@@ -142,7 +142,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(getCmd);
             var result = await stream.ReadRedisData();
 
-            Assert.Equal(value, result?.DataText);
+            Assert.Equal(value, result?.Result);
         }
 
         [Fact]
@@ -163,7 +163,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(setCmd);
             var setResult = await stream.ReadRedisData();
 
-            Assert.Equal("OK", setResult?.DataText);
+            Assert.Equal("OK", setResult?.Result);
             
             stream = new RedisStream(protocol._socket);
 
@@ -174,7 +174,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(getCmd);
             var result = await stream.ReadRedisData();
 
-            Assert.Equal(value, result?.DataText);
+            Assert.Equal(value, result?.Result);
         }
 
         [Fact]
@@ -195,7 +195,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(setCmd);
             var result = await stream.ReadRedisData();
 
-            Assert.Equal(RedisDataType.Errors, result?.DataType);
+            Assert.Equal(RedisDataType.Errors, result?.Type);
         }
 
         [Fact]
@@ -214,7 +214,7 @@ namespace Balbarak.Redis.Test
             await stream.WriteAsync(setCmd);
             var result = await stream.ReadRedisData();
 
-            Assert.Equal(RedisDataType.Integers, result?.DataType);
+            Assert.Equal(RedisDataType.Integers, result?.Type);
         }
 
     }

@@ -27,7 +27,7 @@ namespace Balbarak.Redis.Test
 
             var dataRecieved = await client.Get(key);
 
-            Assert.Equal(data, dataRecieved?.DataText);
+            Assert.Equal(data, dataRecieved?.Result);
         }
 
         [Fact]
@@ -57,7 +57,7 @@ namespace Balbarak.Redis.Test
 
             var dataRecieved = await client.Get(key);
 
-            Assert.Equal(data, dataRecieved?.DataText);
+            Assert.Equal(data, dataRecieved?.Result);
 
         }
 
@@ -68,7 +68,7 @@ namespace Balbarak.Redis.Test
 
             var result = await client.Get(Guid.NewGuid().ToString().ToLower());
 
-            Assert.Empty(result?.DataText);
+            Assert.Empty(result?.Result);
         }
 
         [Fact]
@@ -114,7 +114,7 @@ namespace Balbarak.Redis.Test
 
             var dataRecieved = await client.Get(key);
 
-            Assert.Equal(data, dataRecieved?.DataText);
+            Assert.Equal(data, dataRecieved?.Result);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace Balbarak.Redis.Test
 
             var dataRecieved = await client.Get(key);
 
-            Assert.Equal(data, dataRecieved?.Data);
+            Assert.Equal(data, dataRecieved?.ResultData);
         }
 
         [Fact]
@@ -150,7 +150,7 @@ namespace Balbarak.Redis.Test
 
             var dataRecieved = await client.Get(key);
 
-            Assert.Equal(data, dataRecieved?.Data);
+            Assert.Equal(data, dataRecieved?.ResultData);
         }
 
         [Fact]
@@ -160,7 +160,7 @@ namespace Balbarak.Redis.Test
 
             var result = await client.Ping();
 
-            Assert.Equal("PONG", result.DataText);
+            Assert.Equal("PONG", result.Result);
         }
 
         private async Task<RedisProtocol> CreateAndConnectClient()
@@ -174,23 +174,23 @@ namespace Balbarak.Redis.Test
 
         private void ConfirmSuccessResult(RedisDataBlock result)
         {
-            Assert.Equal(RedisDataType.SimpleStrings, result?.DataType);
+            Assert.Equal(RedisDataType.SimpleStrings, result?.Type);
 
-            Assert.Equal(RedisResponse.OK, result.DataText);
+            Assert.Equal(RedisResponse.OK, result.Result);
         }
 
         private void ConfirmTrueResult(RedisDataBlock result)
         {
-            Assert.Equal(RedisDataType.Integers, result?.DataType);
+            Assert.Equal(RedisDataType.Integers, result?.Type);
 
-            Assert.Equal("1", result.DataText);
+            Assert.Equal("1", result.Result);
         }
 
         private void ConfirmFalseResult(RedisDataBlock result)
         {
-            Assert.Equal(RedisDataType.Integers, result?.DataType);
+            Assert.Equal(RedisDataType.Integers, result?.Type);
 
-            Assert.Equal("0", result.DataText);
+            Assert.Equal("0", result.Result);
         }
     }
 }
