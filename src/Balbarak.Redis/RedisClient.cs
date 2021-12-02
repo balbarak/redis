@@ -58,6 +58,18 @@ namespace Balbarak.Redis
             return result.Result == RedisResponse.OK;
         }
 
+        public async Task<bool> Set(string key,byte[] value)
+        {
+            if (!IsConnected)
+                await Connect();
+
+            var result = await _protocol.Set(key, value);
+
+            ValidateResult(result);
+
+            return result.Result == RedisResponse.OK;
+        }
+
         public async Task<string> GetStrings(string key)
         {
             if (!IsConnected)
@@ -68,6 +80,18 @@ namespace Balbarak.Redis
             ValidateResult(result);
 
             return result.Result;
+        }
+
+        public async Task<byte[]> GetBytes(string key)
+        {
+            if (!IsConnected)
+                await Connect();
+
+            var result = await _protocol.Get(key);
+
+            ValidateResult(result);
+
+            return result.ResultData;
         }
 
 

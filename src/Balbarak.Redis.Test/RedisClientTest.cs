@@ -39,5 +39,22 @@ namespace Balbarak.Redis.Test
 
             Assert.Equal(value, result);
         }
+
+        [Fact]
+        public async Task Should_Set_And_Get_Bytes()
+        {
+            var key = "ClientBytes";
+            var value = GetRandomByteArray(10);
+
+            var client = await CreateClient();
+
+            var setResult = await client.Set(key, value);
+
+            Assert.True(setResult);
+
+            var result = await client.GetBytes(key);
+
+            Assert.Equal(value, result);
+        }
     }
 }
