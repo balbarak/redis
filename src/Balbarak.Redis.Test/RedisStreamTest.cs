@@ -28,7 +28,7 @@ namespace Balbarak.Redis.Test
                 .Build();
 
             await stream.WriteAsync(setCmd);
-            var result = await stream.ReadRedisData();
+            var result = await stream.ReadDataBlock();
 
             Assert.Equal("OK", result?.Result);
 
@@ -39,7 +39,7 @@ namespace Balbarak.Redis.Test
                 .Build();
 
             await stream.WriteAsync(getCmd);
-            result = await stream.ReadRedisData();
+            result = await stream.ReadDataBlock();
 
             Assert.Equal(fileData, result?.ResultData);
 
@@ -61,7 +61,7 @@ namespace Balbarak.Redis.Test
                 .Build();
 
             await stream.WriteAsync(setCmd);
-            var result = await stream.ReadRedisData();
+            var result = await stream.ReadDataBlock();
 
             Assert.Equal("OK", result?.Result);
 
@@ -72,7 +72,7 @@ namespace Balbarak.Redis.Test
                 .Build();
 
             await stream.WriteAsync(getCmd);
-            result = await stream.ReadRedisData();
+            result = await stream.ReadDataBlock();
 
             Assert.Equal(fileData, result?.ResultData);
 
@@ -95,7 +95,7 @@ namespace Balbarak.Redis.Test
 
             await stream.WriteAsync(setCmd);
 
-            var result = await stream.ReadRedisData();
+            var result = await stream.ReadDataBlock();
 
             Assert.Equal("OK", result?.Result);
 
@@ -107,7 +107,7 @@ namespace Balbarak.Redis.Test
 
 
             await stream.WriteAsync(getCmd);
-            var readResult = await stream.ReadRedisData();
+            var readResult = await stream.ReadDataBlock();
 
             Assert.Equal(fileData, readResult?.ResultData);
 
@@ -129,7 +129,7 @@ namespace Balbarak.Redis.Test
                 .Build();
 
             await stream.WriteAsync(setCmd);
-            var setResult = await stream.ReadRedisData();
+            var setResult = await stream.ReadDataBlock();
 
             Assert.Equal("OK", setResult?.Result);
             
@@ -140,7 +140,7 @@ namespace Balbarak.Redis.Test
                .Build();
 
             await stream.WriteAsync(getCmd);
-            var result = await stream.ReadRedisData();
+            var result = await stream.ReadDataBlock();
 
             Assert.Equal(value, result?.Result);
         }
@@ -161,7 +161,7 @@ namespace Balbarak.Redis.Test
                 .Build();
 
             await stream.WriteAsync(setCmd);
-            var setResult = await stream.ReadRedisData();
+            var setResult = await stream.ReadDataBlock();
 
             Assert.Equal("OK", setResult?.Result);
             
@@ -172,7 +172,7 @@ namespace Balbarak.Redis.Test
                .Build();
 
             await stream.WriteAsync(getCmd);
-            var result = await stream.ReadRedisData();
+            var result = await stream.ReadDataBlock();
 
             Assert.Equal(value, result?.Result);
         }
@@ -193,7 +193,7 @@ namespace Balbarak.Redis.Test
                 .Build();
 
             await stream.WriteAsync(setCmd);
-            var result = await stream.ReadRedisData();
+            var result = await stream.ReadDataBlock();
 
             Assert.Equal(RedisDataType.Errors, result?.Type);
         }
@@ -212,7 +212,7 @@ namespace Balbarak.Redis.Test
                 .Build();
 
             await stream.WriteAsync(setCmd);
-            var result = await stream.ReadRedisData();
+            var result = await stream.ReadDataBlock();
 
             Assert.Equal(RedisDataType.Integers, result?.Type);
         }

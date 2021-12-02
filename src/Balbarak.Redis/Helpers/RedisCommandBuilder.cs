@@ -14,6 +14,7 @@ namespace Balbarak.Redis
         private string _value;
         private byte[] _valueBytes;
         private int _numberOfSegments = 1;
+        private TimeSpan? _expire = null;
 
         public RedisCommandBuilder(string command)
         {
@@ -46,6 +47,14 @@ namespace Balbarak.Redis
             return this;
         }
 
+        public RedisCommandBuilder WithExpiration(TimeSpan expire)
+        {
+            _expire = expire;
+            _numberOfSegments +=2;
+
+            return this;
+        }
+
         public byte[] Build()
         {
             byte[] result = null;
@@ -54,7 +63,7 @@ namespace Balbarak.Redis
             {
                 var command = Encoding.ASCII.GetBytes($"*{_numberOfSegments}\r\n${_command.Length}\r\n{_command}\r\n");
 
-                ms.Write(command,0,command.Length);
+                ms.Write(command, 0, command.Length);
 
                 if (!string.IsNullOrWhiteSpace(_key))
                 {
@@ -62,7 +71,7 @@ namespace Balbarak.Redis
 
                     var keyData = Encoding.UTF8.GetBytes($"${keySize}\r\n{_key}\r\n");
 
-                    ms.Write(keyData,0,keyData.Length);
+                    ms.Write(keyData, 0, keyData.Length);
                 }
 
                 if (!string.IsNullOrWhiteSpace(_value))
@@ -71,19 +80,30 @@ namespace Balbarak.Redis
 
                     var valueData = Encoding.UTF8.GetBytes($"${valueSize}\r\n{_value}\r\n");
 
-                    ms.Write(valueData,0,valueData.Length);
+                    ms.Write(valueData, 0, valueData.Length);
                 }
 
                 if (_valueBytes != null && _valueBytes.Length > 0)
                 {
                     var sizeData = Encoding.ASCII.GetBytes($"${_valueBytes.Length}\r\n");
 
-                    ms.Write(sizeData,0,sizeData.Length);
+                    ms.Write(sizeData, 0, sizeData.Length);
 
-                    ms.Write(_valueBytes,0,_valueBytes.Length);
+                    ms.Write(_valueBytes, 0, _valueBytes.Length);
 
                     ms.WriteByte((byte)'\r');
                     ms.WriteByte((byte)'\n');
+                }
+
+                if (_expire != null)
+                {
+                    var totalSeconds = ((int)_expire.Value.TotalSeconds).ToString();
+
+                    var totalSecondsSize = Encoding.ASCII.GetByteCount(totalSeconds);
+
+                    var expireData = Encoding.ASCII.GetBytes($"$2\r\nEX\r\n${totalSecondsSize}\r\n{totalSeconds}\r\n");
+
+                    ms.Write(expireData, 0, expireData.Length);
                 }
 
                 result = ms.ToArray();

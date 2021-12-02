@@ -28,7 +28,7 @@ namespace Balbarak.Redis.Protocol
 
         }
 
-        public async Task<RedisDataBlock> ReadRedisData()
+        public async Task<RedisDataBlock> ReadDataBlock()
         {
             RedisDataBlock result = null;
 

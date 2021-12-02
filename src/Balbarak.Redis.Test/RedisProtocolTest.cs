@@ -154,6 +154,27 @@ namespace Balbarak.Redis.Test
         }
 
         [Fact]
+        public async Task Should_Set_Expiration()
+        {
+            var key = "keyWithExpired";
+            var value = "This will expire in 2 seconds ...";
+
+            var expire = TimeSpan.FromSeconds(2.3);
+
+            var client = await CreateAndConnectClient();
+
+            var result = await client.Set(key, value, expire);
+
+            ConfirmSuccessResult(result);
+
+            await Task.Delay(2000);
+
+            var dataRecieved = await client.Get(key);
+
+            Assert.Empty(dataRecieved?.Result);
+        }
+
+        [Fact]
         public async Task Should_Ping()
         {
             var client = await CreateAndConnectClient();
