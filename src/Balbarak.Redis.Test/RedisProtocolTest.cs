@@ -159,7 +159,7 @@ namespace Balbarak.Redis.Test
             var key = "keyWithExpired";
             var value = "This will expire in 2 seconds ...";
 
-            var expire = TimeSpan.FromSeconds(2.3);
+            var expire = TimeSpan.FromSeconds(2);
 
             var client = await CreateAndConnectClient();
 
