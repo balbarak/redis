@@ -8,12 +8,36 @@ using Xunit;
 namespace Balbarak.Redis.Test
 {
     
-    public class RedisClientTest
+    public class RedisClientTest : TestBase
     {
         [Fact]
-        public async Task Should_Connect()
+        public async Task Should_Set_Strings()
         {
+            var key = "from client !";
+            var value = "Hello this is set from redis client !";
 
+            var client = await CreateClient();
+
+            var result = await client.Set(key, value);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task Should_Set_And_Get_Strings()
+        {
+            var key = "\n\rKey\r\nImpos\r\n";
+            var value = "Hello this is set from redis client !";
+
+            var client = await CreateClient();
+
+            var setResult = await client.Set(key, value);
+
+            Assert.True(setResult);
+
+            var result = await client.GetStrings(key);
+
+            Assert.Equal(value, result);
         }
     }
 }

@@ -19,6 +19,13 @@ namespace Balbarak.Redis.Test
             return client;
         }
 
+        internal virtual async Task<RedisClient> CreateClient()
+        {
+            var client = new RedisClient(Connections.HOST, Connections.PORT);
+
+            return client;
+        }
+
         protected byte[] GetRandomByteArray(int sizeInKb)
         {
             Random rnd = new Random();

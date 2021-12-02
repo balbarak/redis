@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Balbarak.Redis.Protocol
 {
-    internal class RedisProtocol
+    internal class RedisProtocol : IDisposable
     {
         internal Socket _socket;
 
@@ -90,5 +90,12 @@ namespace Balbarak.Redis.Protocol
                 .ConfigureAwait(false);
         }
 
+        public void Dispose()
+        {
+            if (_socket != null)
+            {
+                _socket.Dispose();
+            }
+        }
     }
 }
