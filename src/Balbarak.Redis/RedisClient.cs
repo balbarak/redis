@@ -14,6 +14,7 @@ namespace Balbarak.Redis
     {
         private string _host;
         private int _prot;
+        private string _password;
         private RedisProtocol _protocol;
 
         public bool IsConnected { get; private set; }
@@ -28,11 +29,24 @@ namespace Balbarak.Redis
             _protocol = new RedisProtocol();
         }
 
+        public RedisClient(string host, int port,string password) : this(host,port) 
+        {
+            _password = password;
+        }
+
         public async Task Connect()
         {
             try
             {
                 await _protocol.Connect(_host, _prot);
+
+                if (!string.IsNullOrWhiteSpace(_password))
+                {
+                    var authResult = await _protocol.Auth(_password);
+
+                    ValidateResult(authResult);
+                }
+                    
 
                 IsConnected = true;
                 OnConnected?.Invoke(this, default);
@@ -93,7 +107,6 @@ namespace Balbarak.Redis
 
             return result.ResultData;
         }
-
 
         private void ValidateResult(RedisDataBlock result)
         {

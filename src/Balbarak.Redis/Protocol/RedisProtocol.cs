@@ -28,6 +28,17 @@ namespace Balbarak.Redis.Protocol
                 .ConfigureAwait(false);
         }
 
+        public async Task<RedisDataBlock> Auth(string password)
+        {
+            var dataToSend = new RedisCommandBuilder("AUTH")
+              .WithValue(password)
+              .Build();
+
+            return await SendCommandInternal(dataToSend)
+                .ConfigureAwait(false);
+        }
+
+
         public async Task<RedisDataBlock> Set(string key, string value)
         {
             var dataToSend = new RedisCommandBuilder("SET")
@@ -39,7 +50,7 @@ namespace Balbarak.Redis.Protocol
                 .ConfigureAwait(false);
         }
 
-        public async Task<RedisDataBlock> Set(string key, string value,TimeSpan expire)
+        public async Task<RedisDataBlock> Set(string key, string value, TimeSpan expire)
         {
             var dataToSend = new RedisCommandBuilder("SET")
                 .WithKey(key)
@@ -87,7 +98,7 @@ namespace Balbarak.Redis.Protocol
         {
             var dataToSend = new RedisCommandBuilder("Ping").Build();
 
-            return  await SendCommandInternal(dataToSend)
+            return await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);
         }
 
