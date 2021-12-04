@@ -10,5 +10,6 @@ namespace Balbarak.Redis.Test
     {
         public const string HOST = "localhost";
         public const int PORT = 6379;
+        public const int AUTH_PORT = 6380;
     }
 }

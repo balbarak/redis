@@ -38,6 +38,17 @@ namespace Balbarak.Redis.Protocol
                 .ConfigureAwait(false);
         }
 
+        public async Task<RedisDataBlock> Auth(string username,string password)
+        {
+            var dataToSend = new RedisCommandBuilder("AUTH")
+              .WithValue(username)
+              .WithValue(password)
+              .Build();
+
+            return await SendCommandInternal(dataToSend)
+                .ConfigureAwait(false);
+        }
+
 
         public async Task<RedisDataBlock> Set(string key, string value)
         {

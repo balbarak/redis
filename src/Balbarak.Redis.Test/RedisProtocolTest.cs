@@ -13,6 +13,30 @@ namespace Balbarak.Redis.Test
     public class RedisProtocolTest : TestBase
     {
         [Fact]
+        public async Task Should_Auth_With_User_And_Password()
+        {
+            var client = await CreateAndConnectClientAuth();
+
+            var authResult = await client.Auth("admin", "1122");
+
+            ConfirmSuccessResult(authResult);
+
+        }
+
+        [Fact]
+        public async Task Should_Not_Auth_When_User_And_Password_Is_Not_Valid()
+        {
+            var client = await CreateAndConnectClientAuth();
+
+            var authResult = await client.Auth("admins", "1122");
+
+            Assert.Equal(RedisDataType.Errors, authResult.Type);
+
+            Assert.Equal(RedisResponse.AUTH_FAILED, authResult?.Result);
+
+        }
+
+        [Fact]
         public async Task Should_Set_Data_With_Special_Characters()
         {
             var client = await CreateAndConnectClient();
@@ -189,6 +213,15 @@ namespace Balbarak.Redis.Test
             var client = new RedisProtocol();
 
             await client.Connect(Connections.HOST, Connections.PORT);
+
+            return client;
+        }
+
+        private async Task<RedisProtocol> CreateAndConnectClientAuth()
+        {
+            var client = new RedisProtocol();
+
+            await client.Connect(Connections.HOST, Connections.AUTH_PORT);
 
             return client;
         }

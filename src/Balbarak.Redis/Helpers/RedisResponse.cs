@@ -11,5 +11,7 @@ namespace Balbarak.Redis
         public const string SUCCESS = "+OK\r\n";
 
         public const string OK = "OK";
+
+        public const string AUTH_FAILED = "WRONGPASS invalid username-password pair";
     }
 }

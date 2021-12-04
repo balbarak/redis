@@ -11,7 +11,8 @@ namespace Balbarak.Redis
         private StringBuilder _fullCommand;
         private string _command;
         private string _key;
-        private string _value;
+        //private string _value;
+        private List<string> _values;
         private byte[] _valueBytes;
         private int _numberOfSegments = 1;
         private TimeSpan? _expire = null;
@@ -20,6 +21,7 @@ namespace Balbarak.Redis
         {
             _fullCommand = new StringBuilder();
             _command = command;
+            _values = new List<string>();
         }
 
         public RedisCommandBuilder WithKey(string key)
@@ -33,7 +35,8 @@ namespace Balbarak.Redis
 
         public RedisCommandBuilder WithValue(string value)
         {
-            _value = value;
+            _values.Add(value);
+
             _numberOfSegments++;
 
             return this;
@@ -74,13 +77,17 @@ namespace Balbarak.Redis
                     ms.Write(keyData, 0, keyData.Length);
                 }
 
-                if (!string.IsNullOrWhiteSpace(_value))
+                if (_values.Count > 0)
                 {
-                    var valueSize = Encoding.UTF8.GetByteCount(_value);
+                    foreach (var value in _values)
+                    {
+                        var valueSize = Encoding.UTF8.GetByteCount(value);
 
-                    var valueData = Encoding.UTF8.GetBytes($"${valueSize}\r\n{_value}\r\n");
+                        var valueData = Encoding.UTF8.GetBytes($"${valueSize}\r\n{value}\r\n");
 
-                    ms.Write(valueData, 0, valueData.Length);
+                        ms.Write(valueData, 0, valueData.Length);
+                    }
+                    
                 }
 
                 if (_valueBytes != null && _valueBytes.Length > 0)
