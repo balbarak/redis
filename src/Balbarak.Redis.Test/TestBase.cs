@@ -21,7 +21,7 @@ namespace Balbarak.Redis.Test
 
         internal virtual async Task<RedisClient> CreateClient()
         {
-            var client = new RedisClient(Connections.HOST, Connections.PORT,"1122");
+            var client = new RedisClient(Connections.HOST, Connections.PORT);
 
             return client;
         }

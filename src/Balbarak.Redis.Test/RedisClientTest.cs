@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Balbarak.Redis.Test.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -55,6 +56,26 @@ namespace Balbarak.Redis.Test
             var result = await client.GetBytes(key);
 
             Assert.Equal(value, result);
+        }
+
+
+        [Fact]
+        public async Task Should_Set_And_Get_SerializeData()
+        {
+            var key = "serialized";
+            
+            var client = await CreateClient();
+
+            var employee = Employee.Create();
+
+            var setResult = await client.Set(key, employee);
+
+            Assert.True(setResult);
+
+            var result = await client.Get<Employee>(key);
+
+
+            Assert.True(result.Equals(employee));
         }
     }
 }

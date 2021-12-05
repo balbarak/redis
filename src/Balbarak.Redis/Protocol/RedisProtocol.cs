@@ -105,6 +105,15 @@ namespace Balbarak.Redis.Protocol
                 .ConfigureAwait(false);
         }
 
+        public async Task<RedisDataBlock> Info()
+        {
+            var dataToSend = new RedisCommandBuilder("Info")
+              .Build();
+
+            return await SendCommandInternal(dataToSend)
+                .ConfigureAwait(false);
+        }
+
         public async Task<RedisDataBlock> Ping()
         {
             var dataToSend = new RedisCommandBuilder("Ping").Build();

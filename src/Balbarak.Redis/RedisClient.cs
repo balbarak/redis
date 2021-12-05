@@ -12,10 +12,9 @@ namespace Balbarak.Redis
 {
     public class RedisClient : IRedisClient
     {
-        private string _host;
-        private int _prot;
         private string _password;
         private RedisProtocol _protocol;
+        private RedisConfiguration _config;
 
         public bool IsConnected { get; private set; }
 
@@ -23,10 +22,8 @@ namespace Balbarak.Redis
 
         public RedisClient(string host,int port)
         {
-            _host = host;
-            _prot = port;
-
             _protocol = new RedisProtocol();
+            _config = new RedisConfiguration(host, port);
         }
 
         public RedisClient(string host, int port,string password) : this(host,port) 
@@ -38,7 +35,7 @@ namespace Balbarak.Redis
         {
             try
             {
-                await _protocol.Connect(_host, _prot);
+                await _protocol.Connect(_config.Host, _config.Port);
 
                 if (!string.IsNullOrWhiteSpace(_password))
                 {
@@ -46,8 +43,7 @@ namespace Balbarak.Redis
 
                     ValidateResult(authResult);
                 }
-                    
-
+              
                 IsConnected = true;
                 OnConnected?.Invoke(this, default);
             }
@@ -55,7 +51,7 @@ namespace Balbarak.Redis
             {
                 IsConnected = false;
 
-                throw new RedisException($"Unable to connect to redis server {_host}:{_prot}", ex);
+                throw new RedisException($"Unable to connect to redis server {_config.Host}:{_config.Port}", ex);
             }
 
         }
@@ -82,6 +78,30 @@ namespace Balbarak.Redis
             ValidateResult(result);
 
             return result.Result == RedisResponse.OK;
+        }
+
+        public async Task<bool> Set<T>(string key, T value)
+        {
+            if (!IsConnected)
+                await Connect();
+
+            var data = _config.Serializer.Serialize(value);
+
+            var result = await _protocol.Set(key, data);
+
+            ValidateResult(result);
+
+            return result.Result == RedisResponse.OK;
+        }
+
+        public async Task<T> Get<T>(string key)
+        {
+            if (!IsConnected)
+                await Connect();
+
+            var data = await GetBytes(key);
+
+            return _config.Serializer.Deserialize<T>(data);
         }
 
         public async Task<string> GetStrings(string key)

@@ -208,6 +208,16 @@ namespace Balbarak.Redis.Test
             Assert.Equal("PONG", result.Result);
         }
 
+        [Fact]
+        public async Task Should_Read_Info()
+        {
+            var client = await CreateAndConnectClient();
+
+            var result = await client.Info();
+
+            //Assert.Equal("PONG", result.Result);
+        }
+
         private async Task<RedisProtocol> CreateAndConnectClient()
         {
             var client = new RedisProtocol();
