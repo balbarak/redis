@@ -8,10 +8,8 @@ namespace Balbarak.Redis
 {
     internal class RedisCommandBuilder
     {
-        private StringBuilder _fullCommand;
         private string _command;
         private string _key;
-        //private string _value;
         private List<string> _values;
         private byte[] _valueBytes;
         private int _numberOfSegments = 1;
@@ -19,7 +17,6 @@ namespace Balbarak.Redis
 
         public RedisCommandBuilder(string command)
         {
-            _fullCommand = new StringBuilder();
             _command = command;
             _values = new List<string>();
         }
