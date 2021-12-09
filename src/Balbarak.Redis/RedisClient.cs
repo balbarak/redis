@@ -12,9 +12,10 @@ namespace Balbarak.Redis
 {
     public class RedisClient : IRedisClient
     {
-        private string _password;
         private RedisProtocol _protocol;
         private RedisConfiguration _config;
+
+        public RedisConfiguration Settings => _config;
 
         public bool IsConnected { get; private set; }
 
@@ -28,7 +29,13 @@ namespace Balbarak.Redis
 
         public RedisClient(string host, int port,string password) : this(host,port) 
         {
-            _password = password;
+           _config.Password = password; ;
+        }
+
+        public RedisClient(RedisConfiguration config)
+        {
+            _protocol = new RedisProtocol();
+            _config = config;
         }
 
         public async Task Connect()
@@ -37,13 +44,8 @@ namespace Balbarak.Redis
             {
                 await _protocol.Connect(_config.Host, _config.Port);
 
-                if (!string.IsNullOrWhiteSpace(_password))
-                {
-                    var authResult = await _protocol.Auth(_password);
+                await Authenticate();
 
-                    ValidateResult(authResult);
-                }
-              
                 IsConnected = true;
                 OnConnected?.Invoke(this, default);
             }
@@ -51,7 +53,7 @@ namespace Balbarak.Redis
             {
                 IsConnected = false;
 
-                throw new RedisException($"Unable to connect to redis server {_config.Host}:{_config.Port}", ex);
+                throw new RedisException($"Unable to connect to redis server {_config.Host}:{_config.Port}. See inner exception for more details", ex);
             }
 
         }
@@ -104,7 +106,7 @@ namespace Balbarak.Redis
             return _config.Serializer.Deserialize<T>(data);
         }
 
-        public async Task<string> GetStrings(string key)
+        public async Task<string> GetString(string key)
         {
             if (!IsConnected)
                 await Connect();
@@ -126,6 +128,28 @@ namespace Balbarak.Redis
             ValidateResult(result);
 
             return result.ResultData;
+        }
+
+        public async Task<int> Delete(params string[] keys)
+        {
+            if (!IsConnected)
+                await Connect();
+
+            var result = await _protocol.Del(keys);
+
+            ValidateResult(result);
+
+            return int.Parse(result.Result);
+        }
+
+        private async Task Authenticate()
+        {
+            if (!string.IsNullOrWhiteSpace(_config.Password))
+            {
+                var authResult = await _protocol.Auth(_config.Password);
+
+                ValidateResult(authResult);
+            }
         }
 
         private void ValidateResult(RedisDataBlock result)

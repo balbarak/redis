@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Balbarak.Redis", "Balbarak.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{CE32D58F-F9D7-4BFF-A7F8-2BC11C882ED0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Balbarak.Redis.Test", "Balbarak.Redis.Test\Balbarak.Redis.Test.csproj", "{EFF933B6-E4B0-4AF2-90F9-9FBCB3C3A1CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Balbarak.Redis.Test", "Balbarak.Redis.Test\Balbarak.Redis.Test.csproj", "{EFF933B6-E4B0-4AF2-90F9-9FBCB3C3A1CF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Serializers", "Serializers", "{C64916E0-889A-4873-923B-EAC8DE6CD385}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

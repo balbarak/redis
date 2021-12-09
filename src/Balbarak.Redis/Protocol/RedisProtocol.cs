@@ -31,30 +31,29 @@ namespace Balbarak.Redis.Protocol
         public async Task<RedisDataBlock> Auth(string password)
         {
             var dataToSend = new RedisCommandBuilder("AUTH")
-              .WithValue(password)
+              .WithArguments(password)
               .Build();
 
             return await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);
         }
 
-        public async Task<RedisDataBlock> Auth(string username,string password)
+        public async Task<RedisDataBlock> Auth(string username, string password)
         {
             var dataToSend = new RedisCommandBuilder("AUTH")
-              .WithValue(username)
-              .WithValue(password)
+              .WithArguments(username)
+              .WithArguments(password)
               .Build();
 
             return await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);
         }
-
 
         public async Task<RedisDataBlock> Set(string key, string value)
         {
             var dataToSend = new RedisCommandBuilder("SET")
                 .WithKey(key)
-                .WithValue(value)
+                .WithArguments(value)
                 .Build();
 
             return await SendCommandInternal(dataToSend)
@@ -65,7 +64,7 @@ namespace Balbarak.Redis.Protocol
         {
             var dataToSend = new RedisCommandBuilder("SET")
                 .WithKey(key)
-                .WithValue(value)
+                .WithArguments(value)
                 .WithExpiration(expire)
                 .Build();
 
@@ -77,7 +76,7 @@ namespace Balbarak.Redis.Protocol
         {
             var dataToSend = new RedisCommandBuilder("SET")
                 .WithKey(key)
-                .WithValue(value)
+                .WithArguments(value)
                 .Build();
 
             return await SendCommandInternal(dataToSend)
@@ -100,6 +99,21 @@ namespace Balbarak.Redis.Protocol
             var dataToSend = new RedisCommandBuilder("EXISTS")
               .WithKey(key)
               .Build();
+
+            return await SendCommandInternal(dataToSend)
+                .ConfigureAwait(false);
+        }
+
+        public async Task<RedisDataBlock> Del(params string[] key)
+        {
+            var cmd = new RedisCommandBuilder("DEL");
+
+            foreach (var item in key)
+            {
+                cmd.WithArguments(item);
+            }
+
+            var dataToSend = cmd.Build();
 
             return await SendCommandInternal(dataToSend)
                 .ConfigureAwait(false);

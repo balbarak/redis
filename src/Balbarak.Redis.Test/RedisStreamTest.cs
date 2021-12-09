@@ -24,7 +24,7 @@ namespace Balbarak.Redis.Test
 
             var setCmd = new RedisCommandBuilder("SET")
                 .WithKey(key)
-                .WithValue(fileData)
+                .WithArguments(fileData)
                 .Build();
 
             await stream.WriteAsync(setCmd);
@@ -57,7 +57,7 @@ namespace Balbarak.Redis.Test
 
             var setCmd = new RedisCommandBuilder("SET")
                 .WithKey(key)
-                .WithValue(fileData)
+                .WithArguments(fileData)
                 .Build();
 
             await stream.WriteAsync(setCmd);
@@ -90,7 +90,7 @@ namespace Balbarak.Redis.Test
 
             var setCmd = new RedisCommandBuilder("SET")
                 .WithKey(key)
-                .WithValue(fileData)
+                .WithArguments(fileData)
                 .Build();
 
             await stream.WriteAsync(setCmd);
@@ -125,7 +125,7 @@ namespace Balbarak.Redis.Test
 
             var setCmd = new RedisCommandBuilder("SET")
                 .WithKey(key)
-                .WithValue(value)
+                .WithArguments(value)
                 .Build();
 
             await stream.WriteAsync(setCmd);
@@ -157,7 +157,7 @@ namespace Balbarak.Redis.Test
 
             var setCmd = new RedisCommandBuilder("SET")
                 .WithKey(key)
-                .WithValue(value)
+                .WithArguments(value)
                 .Build();
 
             await stream.WriteAsync(setCmd);
@@ -189,7 +189,7 @@ namespace Balbarak.Redis.Test
 
             var setCmd = new RedisCommandBuilder("SETT")
                 .WithKey(key)
-                .WithValue(value)
+                .WithArguments(value)
                 .Build();
 
             await stream.WriteAsync(setCmd);

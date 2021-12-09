@@ -12,6 +12,27 @@ namespace Balbarak.Redis.Test
     public class RedisClientTest : TestBase
     {
         [Fact]
+        public async Task Should_Use_Custom_Serializer()
+        {
+            var key = "msgPack";
+
+            var client = await CreateClient();
+
+            client.Settings.Serializer = new MsgPackSerializer();
+
+            var employee = Employee.Create();
+
+            var setResult = await client.Set(key, employee);
+
+            Assert.True(setResult);
+
+            var result = await client.Get<Employee>(key);
+
+
+            Assert.True(result.Equals(employee));
+        }
+
+        [Fact]
         public async Task Should_Set_Strings()
         {
             var key = "from client !";
@@ -36,7 +57,7 @@ namespace Balbarak.Redis.Test
 
             Assert.True(setResult);
 
-            var result = await client.GetStrings(key);
+            var result = await client.GetString(key);
 
             Assert.Equal(value, result);
         }
@@ -57,7 +78,6 @@ namespace Balbarak.Redis.Test
 
             Assert.Equal(value, result);
         }
-
 
         [Fact]
         public async Task Should_Set_And_Get_SerializeData()
