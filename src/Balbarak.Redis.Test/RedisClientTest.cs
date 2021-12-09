@@ -97,5 +97,38 @@ namespace Balbarak.Redis.Test
 
             Assert.True(result.Equals(employee));
         }
+
+        [Fact]
+        public async Task Should_Delete_Key()
+        {
+            var key = "keyToBeDeleted";
+
+            var client = await CreateClient();
+
+            var setResult = await client.Set(key, "Data to be deleted !");
+
+            Assert.True(setResult);
+
+            var result = await client.Delete(key);
+
+            Assert.Equal(1, result);
+
+        }
+
+        [Fact]
+        public async Task Should_Delete_Keys()
+        {
+            var client = await CreateClient();
+
+            await client.Set("k1", "Data to be deleted !");
+            await client.Set("k2", "Data to be deleted !");
+            await client.Set("k3", "Data to be deleted !");
+            await client.Set("k4", "Data to be deleted !");
+
+            var result = await client.Delete("k1","k2","k3","k4");
+
+            Assert.Equal(4, result);
+
+        }
     }
 }

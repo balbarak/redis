@@ -14,7 +14,6 @@ namespace Balbarak.Redis
     {
         private RedisProtocol _protocol;
         private RedisConfiguration _config;
-
         public RedisConfiguration Settings => _config;
 
         public bool IsConnected { get; private set; }
