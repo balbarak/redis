@@ -217,5 +217,26 @@ namespace Balbarak.Redis.Test
             Assert.Equal(RedisDataType.Integers, result?.Type);
         }
 
+        [Fact]
+        public async Task Should_Read_Arrays()
+        {
+            var key = "list";
+
+            var protocol = await CreateProtocolAndConnect();
+
+            var stream = new RedisStream(protocol._socket);
+
+            var setCmd = new RedisCommandBuilder("LRANGE")
+                .WithKey(key)
+                .WithArguments("0")
+                .WithArguments("10")
+                .Build();
+
+            await stream.WriteAsync(setCmd);
+            var result = await stream.ReadDataBlock();
+
+            Assert.Equal(RedisDataType.Integers, result?.Type);
+        }
+
     }
 }

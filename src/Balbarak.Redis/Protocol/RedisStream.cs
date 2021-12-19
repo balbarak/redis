@@ -87,6 +87,37 @@ namespace Balbarak.Redis.Protocol
                 result = new RedisDataBlock(RedisDataType.Integers, buffer, data.Start, data.End);
             }
 
+            if (firstByte == ARRAYS)
+            {
+                var arraySize = ReadArraySize(ref buffer);
+
+                var first = buffer.FirstSpan[0];
+
+                result = new RedisDataBlock(RedisDataType.Arrays, buffer);
+
+                if (first == BULK_STRINGS)
+                {
+                    var size = ReadSizeBlock(ref buffer, out var sizeData);
+
+                    while (size > 0)
+                    {
+                        if (buffer.Length > size)
+                        {
+                            var data = buffer.Slice(sizeData.Start, size);
+
+                            result.ArrayData.Add(new RedisDataBlock(RedisDataType.BulkStrings, buffer, data.Start, data.End));
+
+                            break;
+                        }
+
+                        reader.AdvanceTo(buffer.Start, buffer.End);
+                        readResult = await reader.ReadAsync();
+                        buffer = readResult.Buffer;
+                    }
+                }
+
+            }
+
             await reader.CompleteAsync();
 
             return result;
@@ -141,6 +172,34 @@ namespace Balbarak.Redis.Protocol
             }
 
             data = buffer.Slice(1, endPosition.Value);
+        }
+
+        private long ReadArraySize(ref ReadOnlySequence<byte> buffer)
+        {
+            var endPosition = buffer.PositionOf((byte)'\r');
+            var finalPosition = buffer.PositionOf((byte)'\n');
+
+            if (endPosition == null || finalPosition == null)
+            {
+                return 0;
+            }
+
+            var sizeData = buffer.Slice(1, endPosition.Value);
+
+            var sizeStr = Encoding.UTF8.GetString(sizeData);
+
+            var escape = buffer.Slice(0, finalPosition.Value);
+
+            buffer = buffer.Slice(escape.Length + 1);
+
+            long.TryParse(sizeStr, out var result);
+
+            return result;
+        }
+
+        private bool ProccessBulkString(ref ReadOnlySpan<byte> buffer)
+        {
+            return true;
         }
     }
 }

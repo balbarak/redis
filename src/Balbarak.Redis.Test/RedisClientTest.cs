@@ -1,4 +1,5 @@
 ﻿using Balbarak.Redis.Test.Models;
+using Balbarak.Redis.Test.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,7 +83,7 @@ namespace Balbarak.Redis.Test
         public async Task Should_Set_And_Get_SerializeData()
         {
             var key = "serialized";
-            
+
             var client = await CreateClient();
 
             var employee = Employee.Create();
@@ -124,10 +125,31 @@ namespace Balbarak.Redis.Test
             await client.Set("k3", "Data to be deleted !");
             await client.Set("k4", "Data to be deleted !");
 
-            var result = await client.Delete("k1","k2","k3","k4");
+            var result = await client.Delete("k1", "k2", "k3", "k4");
 
             Assert.Equal(4, result);
 
         }
+
+        [Fact]
+        public async Task Should_Serialze_And_Desrialze_Using_NewtonSoft()
+        {
+            var key = "newtonsoft";
+
+            var client = await CreateClient();
+
+            client.Settings.Serializer = new RedisNewtonSoftSerializer();
+
+            var employee = Employee.Create();
+
+            var setResult = await client.Set(key,employee);
+
+            Assert.True(setResult);
+
+            var result = await client.Get<Employee>(key);
+
+            Assert.True(result.Equals(employee));
+        }
+
     }
 }

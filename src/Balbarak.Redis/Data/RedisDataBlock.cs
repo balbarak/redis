@@ -19,6 +19,8 @@ namespace Balbarak.Redis.Data
 
         public RedisDataType Type { get; private set; }
 
+        public ICollection<RedisDataBlock> ArrayData { get; set; } = new HashSet<RedisDataBlock>();
+
         public RedisDataBlock(RedisDataType type,byte[] rawData,byte[] data)
         {
             Type = type;
@@ -36,6 +38,14 @@ namespace Balbarak.Redis.Data
 
             SetUTF8Text();
         }
+
+        public RedisDataBlock(RedisDataType type, ReadOnlySequence<byte> rawData)
+        {
+            Type = type;
+            RawData = rawData.ToArray();
+            SetUTF8Text();
+        }
+
         private void SetUTF8Text()
         {
             if (ResultData != null)
