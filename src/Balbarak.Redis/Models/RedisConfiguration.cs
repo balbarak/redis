@@ -12,6 +12,10 @@ namespace Balbarak.Redis
 
         public int Port { get; set; }
 
+        public string Username { get; set; }
+
+        public string Password { get; set; }
+
         public IRedisSerializer Serializer { get; set; } = new RedisJsonSerializer();
 
         public RedisConfiguration()

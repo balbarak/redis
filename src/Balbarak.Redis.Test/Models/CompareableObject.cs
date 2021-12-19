@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Balbarak.Redis.Test.Models
 {
-    internal abstract class CompareableObject
+    public abstract class CompareableObject
     {
         protected static bool EqualOperator(CompareableObject left, CompareableObject right)
         {

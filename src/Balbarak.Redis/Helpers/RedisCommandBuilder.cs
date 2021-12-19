@@ -10,7 +10,7 @@ namespace Balbarak.Redis
     {
         private string _command;
         private string _key;
-        private List<string> _values;
+        private List<string> _arguments;
         private byte[] _valueBytes;
         private int _numberOfSegments = 1;
         private TimeSpan? _expire = null;
@@ -18,7 +18,7 @@ namespace Balbarak.Redis
         public RedisCommandBuilder(string command)
         {
             _command = command;
-            _values = new List<string>();
+            _arguments = new List<string>();
         }
 
         public RedisCommandBuilder WithKey(string key)
@@ -30,16 +30,16 @@ namespace Balbarak.Redis
             return this;
         }
 
-        public RedisCommandBuilder WithValue(string value)
+        public RedisCommandBuilder WithArguments(string value)
         {
-            _values.Add(value);
+            _arguments.Add(value);
 
             _numberOfSegments++;
 
             return this;
         }
 
-        public RedisCommandBuilder WithValue(byte[] value)
+        public RedisCommandBuilder WithArguments(byte[] value)
         {
             _valueBytes = value;
             _numberOfSegments++;
@@ -74,9 +74,9 @@ namespace Balbarak.Redis
                     ms.Write(keyData, 0, keyData.Length);
                 }
 
-                if (_values.Count > 0)
+                if (_arguments.Count > 0)
                 {
-                    foreach (var value in _values)
+                    foreach (var value in _arguments)
                     {
                         var valueSize = Encoding.UTF8.GetByteCount(value);
 

@@ -218,6 +218,24 @@ namespace Balbarak.Redis.Test
             //Assert.Equal("PONG", result.Result);
         }
 
+        [Fact]
+        public async Task Should_Delete_Key()
+        {
+
+            var client = await CreateAndConnectClient();
+
+            await client.Set("k1", "this gonna be deleted !");
+            await client.Set("k2", "this gonna be deleted !");
+            await client.Set("k3", "this gonna be deleted !");
+            await client.Set("k4", "this gonna be deleted !");
+            await client.Set("k5", "this gonna be deleted !");
+
+            var result = await client.Del("k1","k2","k3","k4","k5");
+
+            Assert.Equal(RedisDataType.Integers, result.Type);
+            
+        }
+
         private async Task<RedisProtocol> CreateAndConnectClient()
         {
             var client = new RedisProtocol();

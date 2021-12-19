@@ -11,6 +11,27 @@ namespace Balbarak.Redis.Test
     public class RedisClientTest : TestBase
     {
         [Fact]
+        public async Task Should_Use_Custom_Serializer()
+        {
+            var key = "msgPack";
+
+            var client = await CreateClient();
+
+            client.Settings.Serializer = new MsgPackSerializer();
+
+            var employee = Employee.Create();
+
+            var setResult = await client.Set(key, employee);
+
+            Assert.True(setResult);
+
+            var result = await client.Get<Employee>(key);
+
+
+            Assert.True(result.Equals(employee));
+        }
+
+        [Fact]
         public async Task Should_Set_Strings()
         {
             var key = "from client !";
@@ -35,7 +56,7 @@ namespace Balbarak.Redis.Test
 
             Assert.True(setResult);
 
-            var result = await client.GetStrings(key);
+            var result = await client.GetString(key);
 
             Assert.Equal(value, result);
         }
@@ -74,6 +95,39 @@ namespace Balbarak.Redis.Test
 
 
             Assert.True(result.Equals(employee));
+        }
+
+        [Fact]
+        public async Task Should_Delete_Key()
+        {
+            var key = "keyToBeDeleted";
+
+            var client = await CreateClient();
+
+            var setResult = await client.Set(key, "Data to be deleted !");
+
+            Assert.True(setResult);
+
+            var result = await client.Delete(key);
+
+            Assert.Equal(1, result);
+
+        }
+
+        [Fact]
+        public async Task Should_Delete_Keys()
+        {
+            var client = await CreateClient();
+
+            await client.Set("k1", "Data to be deleted !");
+            await client.Set("k2", "Data to be deleted !");
+            await client.Set("k3", "Data to be deleted !");
+            await client.Set("k4", "Data to be deleted !");
+
+            var result = await client.Delete("k1","k2","k3","k4");
+
+            Assert.Equal(4, result);
+
         }
     }
 }

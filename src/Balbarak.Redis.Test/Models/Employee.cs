@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Balbarak.Redis.Test.Models
 {
-    internal class Employee : CompareableObject
+    public class Employee : CompareableObject
     {
         public string FirstName { get; set; }
 
