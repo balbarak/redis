@@ -8,7 +8,6 @@ using Xunit;
 
 namespace Balbarak.Redis.Test
 {
-    
     public class RedisClientTest : TestBase
     {
         [Fact]
@@ -57,7 +56,6 @@ namespace Balbarak.Redis.Test
 
             Assert.Equal(value, result);
         }
-
 
         [Fact]
         public async Task Should_Set_And_Get_SerializeData()
